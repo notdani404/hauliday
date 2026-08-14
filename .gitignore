@@ -4,6 +4,7 @@
 .idea/
 .vscode/*
 !.vscode/extensions.json
+*.code-workspace
 
 # --- Node / TypeScript ---
 node_modules/
