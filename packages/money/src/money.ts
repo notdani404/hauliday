@@ -3,7 +3,7 @@ import {
   CURRENCIES,
   isCurrencyCode,
   minorUnits,
-} from './currencies.js';
+} from './currencies';
 
 /**
  * A monetary amount as integer minor units + ISO 4217 code. Never a float,

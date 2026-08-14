@@ -12,10 +12,10 @@ export {
   equals,
   scale,
   convert,
-} from './money.js';
+} from './money';
 export {
   type CurrencyCode,
   CURRENCIES,
   isCurrencyCode,
   minorUnits,
-} from './currencies.js';
+} from './currencies';

@@ -1,1 +1,1 @@
-export type { Database } from './database.types.js';
+export type { Database } from './database.types';

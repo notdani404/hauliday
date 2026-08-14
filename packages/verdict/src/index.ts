@@ -4,5 +4,5 @@ export {
   type Verdict,
   computeVerdict,
   isWorthHauling,
-} from './verdict.js';
-export { TAX_FREE_RATE, taxFreeRate } from './taxfree.js';
+} from './verdict';
+export { TAX_FREE_RATE, taxFreeRate } from './taxfree';
