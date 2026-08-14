@@ -1,0 +1,586 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FDF4EE;
+    --card:#FFFFFF;
+    --navy:#26375C;
+    --coral:#F0838D;
+    --coral-dark:#E2707B;
+    --blush:#FDE7E7;
+    --green:#3E9B6D;
+    --green-soft:#E7F4EC;
+    --amber:#C98A2E;
+    --amber-soft:#FBF0DC;
+    --slate:#8B8B93;
+    --line:#EFE7E1;
+    --ink:#2A2A30;
+    --radius:18px;
+    font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;padding:18px 12px 28px;
+    background:
+      radial-gradient(1100px 520px at 50% -10%, #FFF7F2 0%, #F6EDE6 55%, #EFE4DC 100%);
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    color:var(--ink);
+  }
+  .frame{
+    width:390px;max-width:100%;height:min(820px,88vh);
+    background:var(--cream);border-radius:38px;
+    border:9px solid #1D1D22;
+    box-shadow:0 30px 60px -20px rgba(45,30,25,.45), 0 0 0 1px rgba(0,0,0,.05);
+    position:relative;overflow:hidden;display:flex;flex-direction:column;
+  }
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:24px;background:#1D1D22;border-radius:0 0 16px 16px;z-index:60}
+  .statusbar{flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:12px 22px 2px;font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.02em}
+  .stage{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overscroll-behavior:contain;padding:10px 20px 20px;animation:slide .34s cubic-bezier(.2,.7,.3,1)}
+  .screen.on{display:flex}
+  @keyframes slide{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.screen{animation:none}}
+
+  /* wordmark */
+  .mark{font-weight:800;letter-spacing:-.01em;color:var(--navy);display:inline-flex;align-items:baseline}
+  .mark b{color:var(--coral);font-weight:800}
+  .mark .dot{color:var(--coral)}
+
+  h1{font-size:22px;line-height:1.25;margin:0 0 6px;font-weight:800;color:var(--navy);letter-spacing:-.02em}
+  h2{font-size:17px;margin:0 0 4px;font-weight:700;color:var(--navy)}
+  p.sub{margin:0 0 14px;font-size:13px;line-height:1.5;color:var(--slate)}
+  .tiny{font-size:11px;color:var(--slate)}
+
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  .btn{width:100%;padding:14px;border-radius:12px;background:var(--coral);color:#fff;font-weight:700;font-size:15px;transition:transform .12s, background .2s}
+  .btn:active{transform:scale(.98);background:var(--coral-dark)}
+  .btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn:focus-visible,.row:focus-visible,.key:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+
+  .search{width:100%;padding:12px 12px 12px 34px;border-radius:11px;border:1px solid var(--line);background:#fff;font-size:16px;font-family:inherit;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238B8B93' stroke-width='2'><circle cx='7' cy='7' r='5'/><path d='M11 11l4 4'/></svg>");
+    background-repeat:no-repeat;background-position:11px center}
+  .search:focus{outline:none;border-color:var(--coral)}
+
+  .label{font-size:11px;font-weight:700;color:var(--navy);opacity:.55;margin:14px 0 7px;letter-spacing:.06em;text-transform:uppercase}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .row{display:flex;align-items:center;gap:11px;width:100%;padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px;font-size:14px;font-weight:600;color:var(--ink);text-align:left;transition:border-color .15s}
+  .row .flag{font-size:19px;line-height:1}
+  .row .cur{margin-left:auto;font-size:11px;color:var(--slate);font-weight:600}
+  .row.sel{border-color:var(--coral);background:#FFF9F9}
+  .row.sel .tick{margin-left:auto;width:19px;height:19px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:11px}
+  .row.sel .cur{margin-left:0}
+
+  .foot{margin-top:auto;padding-top:16px}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 0 12px}
+  .trip{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .trip .leg{display:flex;flex-direction:column;gap:5px}
+  .trip .leg span{font-size:10px;color:var(--slate);font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+  .trip .leg strong{font-size:14px;display:flex;align-items:center;gap:7px;color:var(--navy)}
+  .trip .arrow{color:var(--slate);font-size:16px}
+
+  .cta-card{background:var(--blush);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;margin-bottom:12px}
+  .cta-card h2{margin-bottom:6px}
+  .cta-card p{margin:0;font-size:12.5px;line-height:1.5;color:#8A6E6E;max-width:63%}
+  .shutter-sm{position:absolute;right:18px;bottom:18px;width:56px;height:56px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(214,120,130,.32);font-size:22px}
+
+  .recent{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--navy)}
+  .recent .chev{margin-left:auto;color:var(--slate)}
+
+  /* camera */
+  .cam{position:absolute;inset:0;background:#111;display:none;flex-direction:column;z-index:40}
+  .cam.on{display:flex}
+  .cam .bar{display:flex;align-items:center;gap:12px;padding:16px 18px;color:#fff;font-size:13px;font-weight:600;background:#fff;color:var(--navy)}
+  .cam .view{flex:1;position:relative;background:#1a1a1a;display:grid;place-items:center;overflow:hidden}
+  .cam .view img{width:100%;height:100%;object-fit:cover}
+  .cam .hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:#fff;font-size:12px;opacity:.8}
+  .reticle{position:absolute;inset:16% 12%;border:2px solid rgba(255,255,255,.65);border-radius:16px;box-shadow:0 0 0 2000px rgba(0,0,0,.28)}
+  .cam .controls{background:#000;padding:20px;display:flex;align-items:center;justify-content:space-around}
+  .shutter{width:66px;height:66px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35)}
+  .cam .icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.15);color:#fff;display:grid;place-items:center;font-size:17px}
+
+  /* recognising */
+  .scan{position:absolute;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;color:#fff;font-size:13px;font-weight:600;gap:10px;text-align:center}
+  .spinner{width:34px;height:34px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .prod{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}
+  .prod .thumb{font-size:44px;margin-bottom:6px;display:block}
+  .prod .brand{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  .prod .name{font-size:14.5px;font-weight:700;line-height:1.35;margin:4px 0 2px;color:var(--navy)}
+  .prod .size{font-size:12px;color:var(--slate)}
+  .match{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);padding:4px 9px;border-radius:20px;margin-top:9px}
+
+  /* price entry */
+  .amount{background:#fff;border:1px solid var(--line);border-radius:13px;padding:14px 16px;display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .amount .code{font-size:12px;font-weight:800;color:var(--slate);letter-spacing:.04em}
+  .amount .val{margin-left:auto;font-size:25px;font-weight:800;color:var(--navy);letter-spacing:-.02em}
+  .amount .val.empty{color:#D8D2CD}
+  .caret{display:inline-block;width:2px;height:24px;background:var(--coral);vertical-align:-4px;animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .conv{text-align:right;font-size:12px;color:var(--slate);margin:-4px 2px 10px;min-height:16px}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:auto}
+  .key{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 0;font-size:20px;font-weight:700;color:var(--navy);transition:background .12s}
+  .key:active{background:var(--blush)}
+  .taxnote{display:flex;gap:9px;align-items:flex-start;background:#fff;border:1px dashed var(--line);border-radius:12px;padding:11px 12px;font-size:11.5px;line-height:1.45;color:var(--slate);margin-bottom:10px}
+
+  /* results */
+  .rescard{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:11px}
+  .rescard .head{display:flex;gap:12px;padding:14px;border-bottom:1px solid var(--line);align-items:center}
+  .rescard .head .thumb{font-size:30px}
+  .priceline{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .priceline:last-child{border-bottom:none}
+  .priceline.here{background:#FFFBF8}
+  .priceline.home{background:#FCF8F5}
+  .priceline .k{font-size:11.5px;color:var(--slate);font-weight:600}
+  .priceline .k em{display:block;font-style:normal;font-size:10px;opacity:.8;margin-top:2px}
+  .priceline .v{font-size:19px;font-weight:800;color:var(--navy)}
+  .priceline .v small{display:block;text-align:right;font-size:10.5px;font-weight:600;color:var(--slate);margin-top:2px}
+  .verdict{border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center;color:#fff;margin-bottom:11px}
+  .verdict.good{background:var(--green)}
+  .verdict.meh{background:#C99A4A}
+  .verdict.bad{background:#8B8B93}
+  .verdict.only{background:#5B6BB5}
+  .verdict .big{font-size:16px;font-weight:800;display:block;margin-bottom:2px}
+  .verdict .small{font-size:12px;opacity:.92;line-height:1.4}
+  .verdict .em{font-size:28px}
+  .savings{font-size:26px;font-weight:800;color:var(--green);letter-spacing:-.02em}
+  .conf{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--slate);padding:10px 15px;background:#FBF7F4}
+  .dotg{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .dota{width:7px;height:7px;border-radius:50%;background:#D9A441}
+
+  /* history */
+  .tabs{display:flex;gap:7px;margin-bottom:14px}
+  .tab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;background:#fff;border:1px solid var(--line);color:var(--slate)}
+  .tab.on{background:var(--blush);border-color:var(--blush);color:var(--coral-dark)}
+  .hitem{display:flex;gap:11px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px}
+  .hitem .thumb{font-size:25px}
+  .hitem .nm{font-size:12.5px;font-weight:700;color:var(--navy);line-height:1.3}
+  .hitem .pr{font-size:11px;color:var(--slate);margin-top:3px}
+  .hitem .sv{font-size:11px;font-weight:700;color:var(--green);margin-top:2px}
+  .hitem .sv.neg{color:var(--slate)}
+  .empty{text-align:center;color:var(--slate);font-size:13px;padding:40px 20px;line-height:1.6}
+
+  /* tabbar */
+  .tabbar{flex:0 0 auto;display:flex;background:#fff;border-top:1px solid var(--line);padding:9px 6px 16px}
+  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--slate)}
+  .tabbar button.on{color:var(--coral)}
+  .tabbar .ic{font-size:16px;line-height:1}
+  .tabbar.hidden{display:none}
+
+  .toast{position:absolute;left:20px;right:20px;bottom:88px;background:var(--navy);color:#fff;padding:12px 14px;border-radius:12px;font-size:12.5px;font-weight:600;z-index:70;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+  .toast.on{opacity:1;transform:none}
+
+  .caption{max-width:390px;text-align:center;font-size:12px;color:#8A7B72;line-height:1.6}
+  .caption b{color:#5C4B42}
+  .reset{font-size:11.5px;font-weight:700;color:#8A7B72;border:1px solid #DFD3CA;background:#FFFCFA;padding:7px 14px;border-radius:20px}
+
+  /* touch handling */
+  button{touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  .screen{-webkit-overflow-scrolling:touch}
+
+  /* On a real phone, drop the desk chrome and run full-bleed. */
+  @media (max-width:520px), (max-height:700px){
+    body{padding:0;gap:0;background:var(--cream);overscroll-behavior:none}
+    .frame{width:100%;max-width:none;height:100dvh;height:100svh;border:none;border-radius:0;box-shadow:none}
+    .notch,.statusbar,.caption,.reset{display:none}
+    .stage{padding-top:env(safe-area-inset-top)}
+    .tabbar{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+    .toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+    .key{padding:17px 0;font-size:21px}
+    .row{padding:14px 12px}
+    .cam .controls{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+  }
+</style>
+
+<div class="frame">
+  <div class="notch"></div>
+  <div class="statusbar"><span>9:41</span><span>Hauliday</span><span>100%</span></div>
+
+  <div class="stage" id="stage">
+
+    <!-- 1 Welcome -->
+    <section class="screen on" id="s-welcome" style="justify-content:center;text-align:center;padding:30px 26px">
+      <div style="font-size:32px;justify-content:center" class="mark">H<b>A</b>UL<span class="dot">i</span>DAY</div>
+      <div style="color:var(--coral);font-weight:700;font-size:15px;margin-top:2px">Know before you haul.</div>
+      <div style="font-size:74px;margin:26px 0 20px">🧳✈️</div>
+      <p class="sub" style="font-size:14px;line-height:1.7;margin-bottom:26px">Compare prices.<br>Shop smarter.<br>Make every haul worth it.</p>
+      <button class="btn" onclick="go('home-country')">Let's get started</button>
+    </section>
+
+    <!-- 2 Home country -->
+    <section class="screen" id="s-home-country">
+      <h1>Where are you from?</h1>
+      <p class="sub">This is the price we'll compare against.</p>
+      <input class="search" id="q-home" placeholder="Search country" oninput="renderCountries('home')">
+      <div class="label">Popular</div>
+      <div class="list" id="list-home"></div>
+      <div class="foot"><button class="btn" id="btn-home" onclick="go('dest-country')">Confirm</button></div>
+    </section>
+
+    <!-- 3 Destination -->
+    <section class="screen" id="s-dest-country">
+      <h1>Where are you shopping?</h1>
+      <p class="sub">Select the country you're visiting.</p>
+      <input class="search" id="q-dest" placeholder="Search country" oninput="renderCountries('dest')">
+      <div class="label">Popular</div>
+      <div class="list" id="list-dest"></div>
+      <div class="foot"><button class="btn" id="btn-dest" onclick="go('main')">Confirm</button></div>
+    </section>
+
+    <!-- 4 Home / main -->
+    <section class="screen" id="s-main">
+      <div class="topbar">
+        <div style="font-size:20px" class="mark">H<b>A</b>UL<span class="dot">i</span>DAY</div>
+        <span style="display:flex;gap:14px;align-items:center">
+          <button onclick="toast('No new alerts')" style="font-size:17px">🔔</button>
+          <button onclick="location.reload()" title="Start over" style="font-size:15px;color:var(--slate)">↻</button>
+        </span>
+      </div>
+      <div class="trip">
+        <div class="leg"><span>From</span><strong><span id="t-home-flag">🇸🇬</span> <span id="t-home">Singapore</span></strong></div>
+        <div class="arrow">→</div>
+        <div class="leg" style="align-items:flex-end"><span>In</span><strong><span id="t-dest">Japan</span> <span id="t-dest-flag">🇯🇵</span></strong></div>
+      </div>
+      <div class="cta-card">
+        <h2>Compare a product</h2>
+        <p>Take or upload a photo of the product you're checking.</p>
+        <button class="shutter-sm" onclick="openCam()">📷</button>
+      </div>
+      <button class="recent" onclick="go('history')">🕘 Recent searches <span class="chev">›</span></button>
+      <div class="tiny" style="margin-top:16px;line-height:1.6">
+        Prices come from shoppers like you. Every check you make keeps them fresh for the next traveller.
+      </div>
+    </section>
+
+    <!-- 6 Recognised -->
+    <section class="screen" id="s-found">
+      <h1 style="text-align:center;margin-top:10px">We found it!</h1>
+      <p class="sub" style="text-align:center">Is this the product?</p>
+      <div class="prod" id="prod-card"></div>
+      <div class="foot" style="display:flex;flex-direction:column;gap:9px">
+        <button class="btn" onclick="go('price')">Yes, that's it</button>
+        <button class="btn ghost" onclick="nextCandidate()">No, try again</button>
+      </div>
+    </section>
+
+    <!-- 7 Price entry -->
+    <section class="screen" id="s-price">
+      <h1 id="price-title">What's the price in Japan?</h1>
+      <p class="sub">Enter the price you see on the shelf.</p>
+      <div class="amount">
+        <span class="code" id="cur-code">JPY</span>
+        <span class="val empty" id="amount">0<span class="caret"></span></span>
+      </div>
+      <div class="conv" id="conv"></div>
+      <div class="taxnote" id="taxnote" style="display:none">
+        <span>🏷️</span><span><b>Tax-free available here.</b> Enter the shelf price — we'll show both.</span>
+      </div>
+      <button class="btn ghost" style="margin-bottom:12px" onclick="toast('Price tag scanning is coming later')">Scan price tag</button>
+      <div class="keypad" id="keypad"></div>
+      <button class="btn" style="margin-top:9px" id="btn-compare" disabled onclick="compare()">Compare</button>
+    </section>
+
+    <!-- 9 Results -->
+    <section class="screen" id="s-results">
+      <div class="topbar"><h2 style="margin:0">Your comparison</h2><button onclick="go('main')" style="font-size:18px;color:var(--slate)">✕</button></div>
+      <div id="results-body"></div>
+    </section>
+
+    <!-- 10 History -->
+    <section class="screen" id="s-history">
+      <h1 style="margin-bottom:12px">History</h1>
+      <div class="tabs">
+        <button class="tab on" onclick="setFilter(this,'all')">All</button>
+        <button class="tab" onclick="setFilter(this,'deals')">Great deals</button>
+        <button class="tab" onclick="setFilter(this,'fav')">Favourites</button>
+      </div>
+      <div id="history-body"></div>
+    </section>
+
+    <!-- camera overlay -->
+    <div class="cam" id="cam">
+      <div class="bar"><button onclick="closeCam()" style="font-size:16px">✕</button> Compare a product</div>
+      <div class="view" id="cam-view">
+        <div style="font-size:56px;opacity:.5">🧴</div>
+        <div class="reticle"></div>
+        <div class="hint">Fill the frame with one product</div>
+        <div class="scan" id="scan" style="display:none">
+          <div><div class="spinner"></div><span id="scan-msg">Reading the label…</span></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="icon" onclick="document.getElementById('file').click()">🖼️</button>
+        <button class="shutter" onclick="document.getElementById('file').click()"></button>
+        <button class="icon" onclick="capture()">✨</button>
+      </div>
+      <input type="file" id="file" accept="image/*" style="display:none" onchange="onFile(event)">
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <nav class="tabbar hidden" id="tabbar">
+    <button class="on" data-t="main" onclick="go('main')"><span class="ic">🏠</span>Home</button>
+    <button data-t="history" onclick="go('history')"><span class="ic">🕘</span>History</button>
+    <button data-t="fav" onclick="toast('Favourites coming soon')"><span class="ic">🤍</span>Favourites</button>
+    <button data-t="profile" onclick="toast('Profile coming soon')"><span class="ic">👤</span>Profile</button>
+  </nav>
+</div>
+
+<p class="caption"><b>Hauliday prototype.</b> Tap through the flow — the shutter opens your real camera on a phone, or your file picker on desktop. Prices, matching and savings are simulated from a small seeded catalogue.</p>
+<button class="reset" onclick="location.reload()">Start over</button>
+
+<script>
+/* ---------- data ---------- */
+const COUNTRIES = {
+  SG:{n:'Singapore',f:'🇸🇬',c:'SGD',sym:'S$',dec:2},
+  MY:{n:'Malaysia',f:'🇲🇾',c:'MYR',sym:'RM',dec:2},
+  US:{n:'United States',f:'🇺🇸',c:'USD',sym:'US$',dec:2},
+  AU:{n:'Australia',f:'🇦🇺',c:'AUD',sym:'A$',dec:2},
+  GB:{n:'United Kingdom',f:'🇬🇧',c:'GBP',sym:'£',dec:2},
+  JP:{n:'Japan',f:'🇯🇵',c:'JPY',sym:'¥',dec:0,taxfree:0.10},
+  TH:{n:'Thailand',f:'🇹🇭',c:'THB',sym:'฿',dec:0,taxfree:0.07},
+  KR:{n:'Korea',f:'🇰🇷',c:'KRW',sym:'₩',dec:0,taxfree:0.10},
+  TW:{n:'Taiwan',f:'🇹🇼',c:'TWD',sym:'NT$',dec:0,taxfree:0.05},
+  ID:{n:'Indonesia',f:'🇮🇩',c:'IDR',sym:'Rp',dec:0},
+  VN:{n:'Vietnam',f:'🇻🇳',c:'VND',sym:'₫',dec:0},
+  FR:{n:'France',f:'🇫🇷',c:'EUR',sym:'€',dec:2}
+};
+const HOME_POP = ['SG','MY','US','AU','GB'];
+const DEST_POP = ['JP','TH','KR','TW','US'];
+// rate -> value of 1 unit in SGD
+const RATE_SGD = {SGD:1, MYR:0.305, USD:1.285, AUD:0.845, GBP:1.635, EUR:1.47,
+                  JPY:0.00917, THB:0.0395, KRW:0.00094, TWD:0.0412, IDR:0.000079, VND:0.0000505};
+
+// seeded catalogue. home_sgd = typical price at home, in SGD. null = not sold at home.
+const CATALOG = [
+  {id:'anessa', em:'🧴', brand:'Anessa', name:'Perfect UV Sunscreen Skincare Milk SPF50+ PA++++', size:'60ml',
+   home_sgd:34.90, home_src:'Watsons SG · in-store', freshness:'confirmed 2 days ago by 14 shoppers', conf:'high'},
+  {id:'dhc', em:'🧴', brand:'DHC', name:'Deep Cleansing Oil', size:'200ml',
+   home_sgd:23.90, home_src:'Guardian SG · in-store', freshness:'confirmed 6 days ago by 5 shoppers', conf:'high'},
+  {id:'skii', em:'💧', brand:'SK-II', name:'Facial Treatment Essence', size:'230ml',
+   home_sgd:169.00, home_src:'Sephora SG · online', freshness:'confirmed today · retailer listing', conf:'high'},
+  {id:'yakult', em:'🥛', brand:'Yakult', name:'Y1000 Probiotic Drink (6 pack)', size:'6 × 110ml',
+   home_sgd:null, home_src:'Not sold in your home market', freshness:'checked across 9 SG retailers', conf:'med'},
+  {id:'kitkat', em:'🍫', brand:'Nestlé', name:'Kit Kat Matcha Green Tea (12 mini)', size:'12 pcs',
+   home_sgd:9.90, home_src:'Don Don Donki SG · in-store', freshness:'confirmed 11 days ago by 3 shoppers', conf:'med'},
+  {id:'muji', em:'🖊️', brand:'Muji', name:'Gel Ink Pen 0.5mm (10 pack)', size:'10 pcs',
+   home_sgd:19.00, home_src:'Muji SG · in-store', freshness:'confirmed 3 weeks ago by 2 shoppers', conf:'low'}
+];
+
+const state = {home:'SG', dest:'JP', screen:'welcome', cand:0, digits:'', photo:null, history:[]};
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const cur = code => COUNTRIES[code];
+function fmt(v, code){
+  const c = cur(code);
+  const n = c.dec===0 ? Math.round(v).toLocaleString() : v.toFixed(2);
+  return c.sym + n;
+}
+function toHome(amount, fromCur){
+  return amount * RATE_SGD[fromCur] / RATE_SGD[cur(state.home).c];
+}
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(t._x); t._x=setTimeout(()=>t.classList.remove('on'),1900);
+}
+
+/* ---------- navigation ---------- */
+function go(name){
+  state.screen = name;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $('s-'+name).classList.add('on');
+  $('s-'+name).scrollTop = 0;
+  const showTabs = ['main','history','results'].includes(name);
+  $('tabbar').classList.toggle('hidden', !showTabs);
+  document.querySelectorAll('.tabbar button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.t===name || (name==='results'&&b.dataset.t==='main'));
+  });
+  if(name==='main') syncTrip();
+  if(name==='history') renderHistory();
+  if(name==='price') resetPrice();
+}
+
+/* ---------- country pickers ---------- */
+function renderCountries(which){
+  const q = ($('q-'+which).value||'').trim().toLowerCase();
+  const pop = which==='home'?HOME_POP:DEST_POP;
+  const keys = q ? Object.keys(COUNTRIES).filter(k=>COUNTRIES[k].n.toLowerCase().includes(q)) : pop;
+  const sel = which==='home'?state.home:state.dest;
+  $('list-'+which).innerHTML = keys.map(k=>{
+    const c = COUNTRIES[k], on = k===sel;
+    return `<button class="row ${on?'sel':''}" onclick="pick('${which}','${k}')">
+      <span class="flag">${c.f}</span><span>${c.n}</span>
+      <span class="cur">${c.c}</span>${on?'<span class="tick">✓</span>':''}</button>`;
+  }).join('') || '<div class="tiny" style="padding:14px 2px">No country matches that. Try another spelling.</div>';
+}
+function pick(which, k){
+  if(which==='home') state.home=k; else state.dest=k;
+  renderCountries(which);
+}
+function syncTrip(){
+  $('t-home').textContent = cur(state.home).n;
+  $('t-home-flag').textContent = cur(state.home).f;
+  $('t-dest').textContent = cur(state.dest).n;
+  $('t-dest-flag').textContent = cur(state.dest).f;
+}
+
+/* ---------- camera ---------- */
+function openCam(){ $('cam').classList.add('on'); }
+function closeCam(){ $('cam').classList.remove('on'); $('scan').style.display='none'; }
+function onFile(e){
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const url = URL.createObjectURL(f);
+  state.photo = url;
+  $('cam-view').style.background = '#000';
+  const img = document.createElement('img'); img.src = url;
+  $('cam-view').prepend(img);
+  capture();
+}
+function capture(){
+  const scan = $('scan'); scan.style.display='grid';
+  const msgs = ['Reading the label…','Matching against 42,000 products…','Found a match'];
+  let i=0; $('scan-msg').textContent = msgs[0];
+  const t = setInterval(()=>{
+    i++; if(i<msgs.length) $('scan-msg').textContent = msgs[i];
+    else { clearInterval(t); closeCam(); showCandidate(); }
+  }, 700);
+}
+function showCandidate(){
+  const p = CATALOG[state.cand % CATALOG.length];
+  $('prod-card').innerHTML = `
+    <span class="thumb">${p.em}</span>
+    <div class="brand">${p.brand}</div>
+    <div class="name">${p.name}</div>
+    <div class="size">${p.size}</div>
+    <div class="match">● ${94 - (state.cand%3)*7}% match</div>`;
+  go('found');
+}
+function nextCandidate(){ state.cand++; showCandidate(); toast('Showing the next closest match'); }
+
+/* ---------- price entry ---------- */
+function resetPrice(){
+  state.digits='';
+  const d = cur(state.dest);
+  $('price-title').textContent = `What's the price in ${d.n}?`;
+  $('cur-code').textContent = d.c;
+  $('taxnote').style.display = d.taxfree ? 'flex' : 'none';
+  $('keypad').innerHTML = ['1','2','3','4','5','6','7','8','9','.','0','⌫']
+    .map(k=>`<button class="key" onclick="tap('${k}')">${k}</button>`).join('');
+  paint();
+}
+function tap(k){
+  const d = cur(state.dest);
+  if(k==='⌫') state.digits = state.digits.slice(0,-1);
+  else if(k==='.'){ if(d.dec===0||state.digits.includes('.')) return; state.digits += state.digits?'.':'0.'; }
+  else if(state.digits.replace('.','').length < 9) state.digits += k;
+  paint();
+}
+function paint(){
+  const d = cur(state.dest), raw = state.digits;
+  const el = $('amount');
+  const shown = raw ? (raw.includes('.') ? raw : Number(raw).toLocaleString()) : '0';
+  el.className = 'val' + (raw?'':' empty');
+  el.innerHTML = shown + '<span class="caret"></span>';
+  const v = parseFloat(raw||'0');
+  $('conv').textContent = v>0 ? '≈ ' + fmt(toHome(v, d.c), state.home) + (d.taxfree ? '  ·  tax-free ' + fmt(toHome(v*(1-d.taxfree), d.c), state.home) : '') : '';
+  $('btn-compare').disabled = !(v>0);
+}
+
+/* ---------- comparison ---------- */
+function compare(){
+  const p = CATALOG[state.cand % CATALOG.length];
+  const d = cur(state.dest), h = cur(state.home);
+  const local = parseFloat(state.digits);
+  const localHome = toHome(local, d.c);
+  const taxFreeHome = d.taxfree ? toHome(local*(1-d.taxfree), d.c) : null;
+  const effective = taxFreeHome ?? localHome;
+  const homePrice = p.home_sgd==null ? null : p.home_sgd / RATE_SGD[h.c];
+
+  let verdict, pct=0, save=0;
+  if(homePrice==null){ verdict={cls:'only', em:'🎁', big:'Only available here', small:`We can't find this in ${h.n}. If you want it, this is the trip to buy it.`}; }
+  else {
+    save = homePrice - effective; pct = Math.round(save/homePrice*100);
+    if(pct>=25) verdict={cls:'good', em:'🛍️', big:'Great deal. Haul away!', small:`You save ${fmt(save,state.home)} (${pct}%) versus buying it at home.`};
+    else if(pct>=10) verdict={cls:'meh', em:'🤔', big:'Worth it if it fits', small:`You save ${fmt(save,state.home)} (${pct}%). Nice, but only if you have the luggage space.`};
+    else if(pct>=-8) verdict={cls:'bad', em:'⚖️', big:'About the same', small:`Only ${fmt(Math.abs(save),state.home)} apart. Save the space and buy it at home.`};
+    else verdict={cls:'bad', em:'🏠', big:'Cheaper at home', small:`It costs ${fmt(Math.abs(save),state.home)} more here. Skip it.`};
+  }
+
+  $('results-body').innerHTML = `
+    <div class="rescard">
+      <div class="head">
+        <span class="thumb">${p.em}</span>
+        <div><div class="brand" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:700">${p.brand}</div>
+        <div style="font-size:13px;font-weight:700;line-height:1.35;color:var(--navy)">${p.name}</div>
+        <div class="tiny">${p.size}</div></div>
+      </div>
+      <div class="priceline here">
+        <span class="k">Price in ${d.n}<em>${state.photo?'From your photo':'Entered by you'}</em></span>
+        <span class="v">${fmt(local, state.dest)}<small>≈ ${fmt(localHome, state.home)}</small></span>
+      </div>
+      ${taxFreeHome!==null?`<div class="priceline here">
+        <span class="k">After tourist tax refund<em>${Math.round(d.taxfree*100)}% consumption tax</em></span>
+        <span class="v" style="color:var(--green)">${fmt(local*(1-d.taxfree), state.dest)}<small>≈ ${fmt(taxFreeHome, state.home)}</small></span>
+      </div>`:''}
+      <div class="priceline home">
+        <span class="k">Price in ${h.n}<em>${p.home_src}</em></span>
+        <span class="v">${homePrice==null?'—':fmt(homePrice, state.home)}</span>
+      </div>
+      <div class="conf"><span class="${p.conf==='low'?'dota':'dotg'}"></span>${p.freshness}</div>
+    </div>
+
+    <div class="verdict ${verdict.cls}">
+      <span class="em">${verdict.em}</span>
+      <div><span class="big">${verdict.big}</span><span class="small">${verdict.small}</span></div>
+    </div>
+
+    ${homePrice!=null&&pct>0?`<div style="text-align:center;margin:2px 0 14px">
+      <div class="tiny">You save</div><div class="savings">${fmt(save,state.home)}</div>
+      <div class="tiny">${pct}% cheaper than at home</div></div>`:''}
+
+    <button class="btn ghost" style="margin-bottom:8px" onclick="toast('Saved to Favourites')">🤍 Save to favourites</button>
+    <button class="btn" onclick="thanks()">Confirm this price is correct</button>
+    <p class="tiny" style="text-align:center;margin-top:10px;line-height:1.6">Confirming adds your datapoint to Hauliday and keeps this price fresh for the next traveller.</p>
+  `;
+
+  state.history.unshift({p, local, localHome:effective, homePrice, pct, save, dest:state.dest});
+  go('results');
+}
+function thanks(){ toast('Thanks — your price is now live for others'); }
+
+/* ---------- history ---------- */
+let hFilter='all';
+function setFilter(btn, f){
+  hFilter=f;
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  renderHistory();
+}
+function renderHistory(){
+  let items = state.history;
+  if(hFilter==='deals') items = items.filter(i=>i.pct>=25);
+  if(hFilter==='fav') items = [];
+  $('history-body').innerHTML = items.length ? items.map(i=>`
+    <div class="hitem">
+      <span class="thumb">${i.p.em}</span>
+      <div style="flex:1">
+        <div class="nm">${i.p.brand} ${i.p.name}</div>
+        <div class="pr">${cur(i.dest).n} · ${fmt(i.localHome, state.home)} vs ${i.homePrice==null?'not sold at home':fmt(i.homePrice, state.home)}</div>
+        <div class="sv ${i.pct>0?'':'neg'}">${i.homePrice==null?'Only available abroad':(i.pct>0?`You saved ${i.pct}%`:`${Math.abs(i.pct)}% cheaper at home`)}</div>
+      </div>
+      <span style="font-size:15px">${i.pct>=25?'✅':'•'}</span>
+    </div>`).join('')
+    : `<div class="empty">${hFilter==='fav'?'Nothing saved yet.<br>Tap the heart on a comparison to keep it here.':'No checks yet.<br>Snap a product to start your history.'}</div>`;
+}
+
+/* ---------- init ---------- */
+renderCountries('home'); renderCountries('dest'); syncTrip();
+</script>

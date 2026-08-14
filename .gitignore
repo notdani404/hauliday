@@ -1,0 +1,38 @@
+# --- OS / editor ---
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# --- Node / TypeScript ---
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# --- Expo / React Native (Phase 1+) ---
+.expo/
+.expo-shared/
+web-build/
+*.orig.*
+# Native build output (bare/prebuild)
+ios/
+android/
+!ios/.gitkeep
+!android/.gitkeep
+
+# --- Secrets / env ---
+.env
+.env.*
+!.env.example
+
+# --- Supabase (Phase 0+) ---
+supabase/.branches/
+supabase/.temp/
+supabase/.env
