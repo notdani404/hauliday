@@ -2,9 +2,20 @@ import { useCallback, useState } from 'react';
 import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
+import { format, money, isCurrencyCode } from '@hauliday/money';
 import { pending, flush, type PendingObservation } from '../../lib/queue';
 import { Button } from '../../lib/ui';
 import { theme } from '../../lib/theme';
+
+function fmtAmount(it: PendingObservation): string {
+  return isCurrencyCode(it.currency)
+    ? format(money(BigInt(it.amountMinor), it.currency))
+    : `${it.currency} ${it.amountMinor}`;
+}
+function seenAgo(dateISO: string): string {
+  const days = Math.max(0, Math.round((Date.now() - new Date(dateISO + 'T00:00:00Z').getTime()) / 86400000));
+  return days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
+}
 
 export default function HistoryTab() {
   const [items, setItems] = useState<PendingObservation[]>([]);
@@ -22,9 +33,12 @@ export default function HistoryTab() {
 
   async function sync() {
     setBusy(true);
-    await flush();
-    reload();
-    setBusy(false);
+    try {
+      await flush();
+      reload();
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -41,9 +55,9 @@ export default function HistoryTab() {
           <View key={it.localId} style={styles.row}>
             <View>
               <Text style={styles.rowMain}>
-                {it.currency} {it.amountMinor} · {it.channel === 'in_store' ? 'in-store' : 'online'}
+                {fmtAmount(it)} · {it.channel === 'in_store' ? 'in-store' : 'online'}
               </Text>
-              <Text style={styles.rowSub}>seen {it.observedOn}</Text>
+              <Text style={styles.rowSub}>seen {seenAgo(it.observedOn)}</Text>
             </View>
             <Text style={styles.pendingTag}>pending</Text>
           </View>

@@ -27,7 +27,12 @@ export default function SearchTab() {
   }, [query, home.code]);
 
   async function open(r: SearchResult) {
-    const estimates = await getHomeEstimates(r.variant.variantId, home.code);
+    let estimates = null;
+    try {
+      estimates = await getHomeEstimates(r.variant.variantId, home.code);
+    } catch {
+      // fall through with no estimates rather than trapping the user
+    }
     begin({ gtin: r.gtin ?? '', variant: r.variant, home: estimates });
     router.push('/product');
   }
@@ -47,6 +52,7 @@ export default function SearchTab() {
       <FlatList
         data={results}
         keyExtractor={(r) => r.variant.variantId}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ gap: 10, paddingBottom: 12 }}
         ListEmptyComponent={
           loading ? (

@@ -1,5 +1,15 @@
-import { useRef, useState } from 'react';
-import { Text, View, TextInput, StyleSheet, Pressable } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Text,
+  View,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Linking,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'expo-camera';
@@ -16,81 +26,116 @@ export default function ScanTab() {
   const [permission, requestPermission] = useCameraPermissions();
   const [manual, setManual] = useState('');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const handled = useRef(false);
+
+  // Success toast from a prior submit — auto-dismiss after 3s.
+  useEffect(() => {
+    if (!toast) return;
+    setNotice(toast);
+    const t = setTimeout(() => setNotice(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   async function handleGtin(gtin: string) {
     if (handled.current || !gtin) return;
     handled.current = true;
     setBusy(true);
-    const variant = await resolveBarcode(gtin);
-    const estimates = variant ? await getHomeEstimates(variant.variantId, home.code) : null;
-    begin({ gtin, variant, home: estimates });
-    handled.current = false;
-    setBusy(false);
-    router.push('/product');
+    setError(null);
+    try {
+      const variant = await resolveBarcode(gtin);
+      const estimates = variant ? await getHomeEstimates(variant.variantId, home.code) : null;
+      begin({ gtin, variant, home: estimates });
+      router.push('/product');
+    } catch {
+      setError("Couldn't look that up. Check your connection and try again.");
+    } finally {
+      handled.current = false;
+      setBusy(false);
+    }
   }
 
   const onBarcode = (r: BarcodeScanningResult) => {
     if (r.data) void handleGtin(r.data.trim());
   };
 
+  const canRequest = permission?.canAskAgain ?? true;
+
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      {toast ? (
-        <View style={styles.toast}>
-          <Text style={styles.toastText}>{toast}</Text>
-        </View>
-      ) : null}
-      <TripHeader />
-
-      <View style={styles.camWrap}>
-        {permission?.granted ? (
-          <CameraView
-            style={StyleSheet.absoluteFill}
-            barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr'] }}
-            onBarcodeScanned={busy ? undefined : onBarcode}
-          />
-        ) : (
-          <View style={styles.permBox}>
-            <Text style={styles.permText}>
-              {permission ? 'Camera access is needed to scan barcodes.' : 'Checking camera…'}
-            </Text>
-            {permission && !permission.granted && (
-              <Button title="Allow camera" onPress={() => void requestPermission()} />
-            )}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {notice ? (
+          <View style={styles.toast}>
+            <Text style={styles.toastText}>{notice}</Text>
           </View>
-        )}
-        <View style={styles.reticle} pointerEvents="none" />
-      </View>
+        ) : null}
+        <TripHeader />
 
-      <Text style={styles.hint}>{busy ? 'Looking it up…' : 'Point at the barcode on the package.'}</Text>
-
-      <View style={styles.manual}>
-        <Text style={styles.manualLabel}>No camera? Type the barcode.</Text>
-        <View style={styles.manualRow}>
-          <TextInput
-            style={styles.input}
-            value={manual}
-            onChangeText={setManual}
-            placeholder="e.g. 4909978120757"
-            keyboardType="number-pad"
-            editable={!busy}
-          />
-          <Pressable
-            style={[styles.go, (!manual || busy) && styles.goDisabled]}
-            disabled={!manual || busy}
-            onPress={() => void handleGtin(manual.trim())}
-          >
-            <Text style={styles.goText}>Look up</Text>
-          </Pressable>
+        <View style={styles.camWrap}>
+          {permission?.granted ? (
+            <CameraView
+              style={StyleSheet.absoluteFill}
+              barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'qr'] }}
+              onBarcodeScanned={busy ? undefined : onBarcode}
+            />
+          ) : (
+            <View style={styles.permBox}>
+              {!permission ? (
+                <ActivityIndicator color={theme.white} />
+              ) : (
+                <>
+                  <Text style={styles.permText}>Camera access is needed to scan barcodes.</Text>
+                  <Button
+                    title={canRequest ? 'Allow camera' : 'Open Settings'}
+                    onPress={() =>
+                      canRequest ? void requestPermission() : void Linking.openSettings()
+                    }
+                  />
+                </>
+              )}
+            </View>
+          )}
+          <View style={styles.reticle} pointerEvents="none" />
         </View>
-      </View>
+
+        <Text style={[styles.hint, error && styles.hintError]}>
+          {error ?? (busy ? 'Looking it up…' : 'Point at the barcode on the package.')}
+        </Text>
+
+        <View style={styles.manual}>
+          <Text style={styles.manualLabel}>No camera? Type the barcode.</Text>
+          <View style={styles.manualRow}>
+            <TextInput
+              style={styles.input}
+              value={manual}
+              onChangeText={setManual}
+              placeholder="e.g. 4909978120757"
+              keyboardType="number-pad"
+              editable={!busy}
+              returnKeyType="search"
+              onSubmitEditing={() => void handleGtin(manual.trim())}
+            />
+            <Pressable
+              style={[styles.go, (!manual || busy) && styles.goDisabled]}
+              disabled={!manual || busy}
+              onPress={() => void handleGtin(manual.trim())}
+            >
+              <Text style={styles.goText}>Look up</Text>
+            </Pressable>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 20, paddingTop: 8, gap: 10 },
+  screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 20, paddingTop: 8 },
+  flex: { flex: 1, gap: 10 },
   toast: { backgroundColor: '#E4F3EA', borderRadius: 10, padding: 10 },
   toastText: { color: theme.green, fontWeight: '700', fontSize: 13, textAlign: 'center' },
   camWrap: { flex: 1, borderRadius: 18, overflow: 'hidden', backgroundColor: '#1D1D22' },
@@ -107,6 +152,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   hint: { textAlign: 'center', color: theme.slate, fontSize: 13 },
+  hintError: { color: theme.coral, fontWeight: '600' },
   manual: { paddingBottom: 12, gap: 8 },
   manualLabel: { fontSize: 12, color: theme.slate },
   manualRow: { flexDirection: 'row', gap: 8 },
@@ -121,7 +167,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.white,
     color: theme.ink,
   },
-  go: { backgroundColor: theme.coral, borderRadius: 11, paddingHorizontal: 16, justifyContent: 'center' },
+  go: {
+    backgroundColor: theme.coral,
+    borderRadius: 11,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    minHeight: 44,
+  },
   goDisabled: { opacity: 0.45 },
   goText: { color: theme.white, fontWeight: '700' },
 });

@@ -33,19 +33,23 @@ export default function Submit() {
   async function submit() {
     if (!retailerId || !session?.variant || session.destShelfMinor == null || !dest) return;
     setBusy(true);
-    const res = await captureObservation({
-      variantId: session.variant.variantId,
-      retailerId,
-      channel,
-      amountMinor: Number(session.destShelfMinor),
-      currency: dest.currency,
-      taxInclusive: true,
-    });
-    clear();
-    router.replace({
-      pathname: '/scan',
-      params: { toast: res.synced ? 'Thanks — price shared!' : 'Saved. Will sync when online.' },
-    });
+    try {
+      const res = await captureObservation({
+        variantId: session.variant.variantId,
+        retailerId,
+        channel,
+        amountMinor: Number(session.destShelfMinor),
+        currency: dest.currency,
+        taxInclusive: true,
+      });
+      clear();
+      router.replace({
+        pathname: '/scan',
+        params: { toast: res.synced ? 'Thanks — price shared!' : 'Saved. Will sync when online.' },
+      });
+    } catch {
+      setBusy(false); // stay on the page so they can retry
+    }
   }
 
   return (
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800', color: theme.ink, marginTop: 8 },
   sub: { fontSize: 14, color: theme.slate, marginTop: 6, marginBottom: 14 },
   channelRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  chip: { borderWidth: 1, borderColor: theme.line, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: theme.white },
+  chip: { borderWidth: 1, borderColor: theme.line, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 11, backgroundColor: theme.white },
   chipSel: { borderColor: theme.coral, backgroundColor: '#FDECEE' },
   chipText: { fontSize: 13, fontWeight: '600', color: theme.slate },
   chipTextSel: { color: theme.coral },
