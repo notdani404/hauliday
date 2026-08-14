@@ -197,3 +197,17 @@ scan never gated), Google links/upgrades the identity so contributions carry tru
 *Rejected:* search via LLM (violates #5 — read path stays on our ledger); client-side
 two-query search (weaker matching); replacing anonymous with mandatory Google (gates the loop).
 2026-08
+
+**D-022 · Store-level capture; free-text now, Google Places fast-follow, proximity end-state**
+An in-store observation should tie to a specific **branch**, not just a chain. `store` gains
+`google_place_id`/`area`/`address`; a `find_or_create_store(retailer, name, area)` SECURITY
+DEFINER RPC lets contributors create/resolve stores without a broad insert grant (dedups by
+name+area). **Store is resolved at SYNC time, not capture time** — the name is queued locally
+so offline capture (non-negotiable #6) still works; the store row is created when back online.
+Phased: (a) free-text branch + area now; (b) Google Places autocomplete fills place_id +
+coords + address; (c) **eventual "prices near you"** — `price_estimate` weights/filters by
+distance (a future pricing-logic change, needs the coords from b). Places needs Daniel's Google
+Maps Platform key. See `docs/plans/store-capture.md`.
+*Rejected:* mandatory store (adds friction to the core loop); resolving store at capture time
+(breaks offline).
+2026-08

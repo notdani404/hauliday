@@ -14,6 +14,8 @@ export interface PendingObservation {
   taxInclusive: boolean;
   observedOn: string; // YYYY-MM-DD, local shelf date
   createdAt: string; // ISO
+  storeName?: string; // in-store: specific branch, resolved to a store at sync time
+  storeArea?: string; // in-store: neighbourhood
 }
 
 async function readQueue(): Promise<PendingObservation[]> {
@@ -53,9 +55,26 @@ export async function flush(): Promise<{ synced: number; remaining: number }> {
   let synced = 0;
 
   for (const it of items) {
+    // Resolve the specific store at sync time (offline-first: the name was
+    // captured locally; the store row is created/looked up when back online).
+    let storeId: string | null = null;
+    if (it.channel === 'in_store' && it.storeName) {
+      const { data, error: sErr } = await supabase.rpc('find_or_create_store', {
+        p_retailer_id: it.retailerId,
+        p_name: it.storeName,
+        p_area: it.storeArea ?? undefined,
+      });
+      if (sErr) {
+        stillPending.push(it);
+        continue;
+      }
+      storeId = (data as string | null) ?? null;
+    }
+
     const { error } = await supabase.from('observation').insert({
       variant_id: it.variantId,
       retailer_id: it.retailerId,
+      store_id: storeId,
       channel: it.channel,
       amount_minor: it.amountMinor,
       currency: it.currency,

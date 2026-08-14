@@ -350,7 +350,10 @@ export type Database = {
       }
       store: {
         Row: {
+          address: string | null
+          area: string | null
           created_at: string
+          google_place_id: string | null
           id: string
           lat: number | null
           lng: number | null
@@ -359,7 +362,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          area?: string | null
           created_at?: string
+          google_place_id?: string | null
           id?: string
           lat?: number | null
           lng?: number | null
@@ -368,7 +374,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          area?: string | null
           created_at?: string
+          google_place_id?: string | null
           id?: string
           lat?: number | null
           lng?: number | null
@@ -466,6 +475,10 @@ export type Database = {
       }
     }
     Functions: {
+      find_or_create_store: {
+        Args: { p_area?: string; p_name: string; p_retailer_id: string }
+        Returns: string
+      }
       price_estimate: {
         Args: {
           p_channel: Database["public"]["Enums"]["channel"]

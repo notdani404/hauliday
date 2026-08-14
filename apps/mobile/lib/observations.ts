@@ -13,6 +13,8 @@ export interface ObservationInput {
   amountMinor: number;
   currency: string;
   taxInclusive: boolean;
+  storeName?: string;
+  storeArea?: string;
 }
 
 /**
