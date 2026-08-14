@@ -21,6 +21,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="search" options={{ title: 'Search', tabBarIcon: icon('🔍') }} />
       <Tabs.Screen name="watchlist" options={{ title: 'Watchlist', tabBarIcon: icon('🔖') }} />
       <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: icon('🧾') }} />
+      <Tabs.Screen name="profile" options={{ title: 'Account', tabBarIcon: icon('👤') }} />
     </Tabs>
   );
 }
