@@ -8,7 +8,7 @@ import { theme } from '../lib/theme';
 export default function Welcome() {
   const { dest, hydrated } = useTrip();
 
-  const start = () => router.push(dest ? '/main' : '/home-country');
+  const start = () => router.push(dest ? '/scan' : '/home-country');
 
   return (
     <SafeAreaView style={styles.screen}>

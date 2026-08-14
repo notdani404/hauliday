@@ -26,7 +26,7 @@ export default function Price() {
   const [text, setText] = useState('');
 
   useEffect(() => {
-    if (!session || !dest) router.replace('/main');
+    if (!session || !dest) router.replace('/scan');
   }, [session, dest]);
   if (!session || !dest) return null;
 

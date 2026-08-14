@@ -20,7 +20,7 @@ export default function Submit() {
 
   useEffect(() => {
     if (!session?.variant || !dest || session.destShelfMinor == null) {
-      router.replace('/main');
+      router.replace('/scan');
       return;
     }
     listRetailers(dest.code)
@@ -43,7 +43,7 @@ export default function Submit() {
     });
     clear();
     router.replace({
-      pathname: '/main',
+      pathname: '/scan',
       params: { toast: res.synced ? 'Thanks — price shared!' : 'Saved. Will sync when online.' },
     });
   }

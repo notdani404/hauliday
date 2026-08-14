@@ -24,7 +24,7 @@ export default function Result() {
   const { dest } = useTrip();
 
   useEffect(() => {
-    if (!session || !dest || session.destShelfMinor == null) router.replace('/main');
+    if (!session || !dest || session.destShelfMinor == null) router.replace('/scan');
   }, [session, dest]);
   if (!session || !dest || session.destShelfMinor == null) return null;
 

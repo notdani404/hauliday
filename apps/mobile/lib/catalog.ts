@@ -49,6 +49,59 @@ export async function resolveBarcode(gtin: string): Promise<ResolvedVariant | nu
   };
 }
 
+export interface SearchResult {
+  variant: ResolvedVariant;
+  gtin: string | null;
+  /** Home in-store estimate shown inline in results (null if none). */
+  homePrice: Money | null;
+  confidence: number;
+  observationCount: number;
+}
+
+/** Case-insensitive catalogue search via the search_catalogue RPC. Empty query browses. */
+export async function searchVariants(query: string, country = 'SG'): Promise<SearchResult[]> {
+  const { data, error } = await supabase.rpc('search_catalogue', {
+    p_query: query,
+    p_country: country,
+  });
+  if (error) {
+    console.warn('[catalog] searchVariants:', error.message);
+    return [];
+  }
+  const rows = (data ?? []) as unknown as Array<{
+    variant_id: string;
+    brand: string;
+    product_name: string;
+    canonical_name: string;
+    market: string;
+    size_value: number | null;
+    size_unit: string | null;
+    gtin: string | null;
+    est_amount_minor: number | null;
+    est_currency: string | null;
+    est_count: number | null;
+    est_confidence: number | null;
+  }>;
+  return rows.map((r) => ({
+    variant: {
+      variantId: r.variant_id,
+      brand: r.brand,
+      productName: r.product_name,
+      canonicalName: r.canonical_name,
+      market: r.market,
+      sizeValue: r.size_value,
+      sizeUnit: r.size_unit,
+    },
+    gtin: r.gtin,
+    homePrice:
+      r.est_amount_minor != null && r.est_currency != null && isCurrencyCode(r.est_currency)
+        ? money(BigInt(r.est_amount_minor), r.est_currency)
+        : null,
+    confidence: Number(r.est_confidence ?? 0),
+    observationCount: r.est_count ?? 0,
+  }));
+}
+
 export type Channel = 'in_store' | 'online';
 
 export interface Estimate {

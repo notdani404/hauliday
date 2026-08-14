@@ -47,7 +47,7 @@ export default function Product() {
 
   // Guard: no active scan -> back to main.
   useEffect(() => {
-    if (!session) router.replace('/main');
+    if (!session) router.replace('/scan');
   }, [session]);
   if (!session) return null;
 

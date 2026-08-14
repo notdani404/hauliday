@@ -481,6 +481,23 @@ export type Database = {
         }
       }
       refresh_price_estimates: { Args: never; Returns: undefined }
+      search_catalogue: {
+        Args: { p_country?: string; p_query: string }
+        Returns: {
+          brand: string
+          canonical_name: string
+          est_amount_minor: number
+          est_confidence: number
+          est_count: number
+          est_currency: string
+          gtin: string
+          market: string
+          product_name: string
+          size_unit: string
+          size_value: number
+          variant_id: string
+        }[]
+      }
     }
     Enums: {
       channel: "online" | "in_store"

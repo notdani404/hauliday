@@ -184,3 +184,16 @@ goods (both maximise the availability-gap story with low regulatory drag). Suppl
 and OTC medicine stay deferred until customs limits are modelled (HSA/SFA friction).
 *Rejected:* headlining formula (legal/quality risk); dropping baby entirely (strong fit).
 2026-08
+
+**D-021 · Searchable catalogue + bottom tab nav; Google auth as an account upgrade**
+Beyond barcode scan, add a **Search** entry path backed by a `search_catalogue(q)` SQL
+function (ilike on brand/name/canonical_name, returns each variant with its home in-store
+estimate inline; upgrade to pg_trgm/FTS when the catalogue grows). App navigation becomes a
+**bottom tab bar: Scan · Search · Watchlist · History** (Watchlist is a stub anticipating the
+Phase 4 retention loop). The capture flow (product→price→result→submit) stacks above the tabs.
+**Google auth is a fast-follow** layered over anonymous: anonymous stays the default (first
+scan never gated), Google links/upgrades the identity so contributions carry trust. See
+`docs/plans/google-auth.md`.
+*Rejected:* search via LLM (violates #5 — read path stays on our ledger); client-side
+two-query search (weaker matching); replacing anonymous with mandatory Google (gates the loop).
+2026-08

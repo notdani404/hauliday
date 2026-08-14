@@ -2,11 +2,11 @@ import { useCallback, useState } from 'react';
 import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
-import { pending, flush, type PendingObservation } from '../lib/queue';
-import { Button } from '../lib/ui';
-import { theme } from '../lib/theme';
+import { pending, flush, type PendingObservation } from '../../lib/queue';
+import { Button } from '../../lib/ui';
+import { theme } from '../../lib/theme';
 
-export default function History() {
+export default function HistoryTab() {
   const [items, setItems] = useState<PendingObservation[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -28,7 +28,7 @@ export default function History() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
       <Text style={styles.title}>Your contributions</Text>
       <Text style={styles.sub}>
         {items.length === 0

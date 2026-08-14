@@ -34,7 +34,7 @@ export default function DestCountry() {
         })}
       </ScrollView>
       <View style={styles.footer}>
-        <Button title="Start scanning" onPress={() => router.replace('/main')} disabled={!dest} />
+        <Button title="Start scanning" onPress={() => router.replace('/scan')} disabled={!dest} />
       </View>
     </SafeAreaView>
   );

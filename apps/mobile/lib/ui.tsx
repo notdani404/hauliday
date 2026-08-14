@@ -1,7 +1,23 @@
 import type { ReactNode } from 'react';
 import { Text, View, Pressable, StyleSheet, type ViewStyle } from 'react-native';
+import { router } from 'expo-router';
 import { format, type Money } from '@hauliday/money';
+import { useTrip } from './trip';
 import { theme } from './theme';
+
+/** Home ⇄ destination strip shown atop the Scan/Search tabs. Tap to change dest. */
+export function TripHeader() {
+  const { home, dest } = useTrip();
+  return (
+    <Pressable style={styles.trip} onPress={() => router.push('/dest-country')}>
+      <Text style={styles.tripText}>
+        {home.flag} {home.name} <Text style={{ color: theme.coral }}>⇄</Text>{' '}
+        {dest?.flag ?? '📍'} {dest?.name ?? 'Pick a destination'}
+      </Text>
+      <Text style={styles.tripEdit}>Change</Text>
+    </Pressable>
+  );
+}
 
 export function Button({
   title,
@@ -56,6 +72,18 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.45 },
   btnText: { color: theme.white, fontWeight: '700', fontSize: 15 },
   btnGhostText: { color: theme.ink },
+  trip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.white,
+    borderWidth: 1,
+    borderColor: theme.line,
+    borderRadius: 12,
+    padding: 12,
+  },
+  tripText: { fontSize: 14, fontWeight: '600', color: theme.ink, flexShrink: 1 },
+  tripEdit: { fontSize: 12, color: theme.slate, marginLeft: 8 },
   card: {
     backgroundColor: theme.white,
     borderWidth: 1,
