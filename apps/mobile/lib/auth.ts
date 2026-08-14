@@ -37,28 +37,44 @@ export function useAuthUser(): AuthState {
 }
 
 /**
- * Sign in with Google. On web this redirects the browser and returns via the
- * OAuth callback (parsed by detectSessionInUrl). On native it opens an auth
- * session and exchanges the PKCE code. Anonymous → Google identity linking (to
- * carry over contributions) is a planned enhancement; this signs in directly.
+ * Start a Google OAuth flow and return its redirect URL. If the current user is
+ * anonymous we LINK Google to that same user (so their scans/contributions and
+ * observer_trust carry over). If linking fails — e.g. the Google account is
+ * already a separate permanent user — we fall back to a normal sign-in as that
+ * account. Uses skipBrowserRedirect so the caller controls the redirect.
+ */
+async function startGoogleFlow(redirectTo: string): Promise<string> {
+  const { data: sess } = await supabase.auth.getSession();
+  const isAnonymous = sess.session?.user?.is_anonymous ?? false;
+  const opts = { provider: 'google' as const, options: { redirectTo, skipBrowserRedirect: true } };
+
+  if (isAnonymous) {
+    const linked = await supabase.auth.linkIdentity(opts);
+    if (!linked.error && linked.data?.url) return linked.data.url;
+    // fall through: identity already linked to another user, or linking disabled
+  }
+  const signedIn = await supabase.auth.signInWithOAuth(opts);
+  if (signedIn.error || !signedIn.data?.url) {
+    throw signedIn.error ?? new Error('No OAuth URL returned');
+  }
+  return signedIn.data.url;
+}
+
+/**
+ * Sign in with Google. Web redirects the browser (session parsed by
+ * detectSessionInUrl on return); native opens an auth session and exchanges the
+ * PKCE code. Anonymous users are upgraded in place via identity linking.
  */
 export async function signInWithGoogle(): Promise<void> {
   if (Platform.OS === 'web') {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    });
-    return; // browser redirects away
+    const url = await startGoogleFlow(window.location.origin);
+    window.location.href = url; // redirect to Google
+    return;
   }
 
   const redirectTo = makeRedirectUri({ scheme: 'hauliday' });
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo, skipBrowserRedirect: true },
-  });
-  if (error || !data.url) throw error ?? new Error('No OAuth URL');
-
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  const url = await startGoogleFlow(redirectTo);
+  const result = await WebBrowser.openAuthSessionAsync(url, redirectTo);
   if (result.type === 'success' && result.url) {
     const code = new URL(result.url).searchParams.get('code');
     if (code) await supabase.auth.exchangeCodeForSession(code);
