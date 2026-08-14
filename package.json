@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@11.5.1",
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22"
   },
   "scripts": {
     "test": "pnpm -r test",
@@ -15,7 +15,7 @@
     "db:push": "supabase db push",
     "db:test": "supabase test db",
     "db:diff": "supabase db diff",
-    "gen:types": "supabase gen types typescript --local > packages/db/src/database.types.ts",
+    "gen:types": "supabase gen types typescript --linked --schema public > packages/db/src/database.types.ts",
     "fx:pull": "pnpm --filter @hauliday/fx start",
     "seed:load": "pnpm --filter @hauliday/seed start"
   },
