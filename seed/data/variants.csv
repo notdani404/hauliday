@@ -1,22 +1,22 @@
 brand,name,category,form,market,size_value,size_unit,pack_count,canonical_name,gtin,gtin_type,verified,segment,flag
-Anessa,Perfect UV Sunscreen Skincare Milk N SPF50+ PA++++,skincare,sunscreen milk,JP,60,ml,1,Anessa Perfect UV Sunscreen Skincare Milk N SPF50+ PA++++ 60ml (JP),4909978120757,jan,false,beauty,clean
-Bioré,UV Aqua Rich Watery Essence SPF50+ PA++++,skincare,sunscreen essence gel,JP,70,g,1,Bioré UV Aqua Rich Watery Essence SPF50+ PA++++ 70g (JP),4901301447647,jan,false,beauty,clean
-Melano CC,Medicated Intensive Anti-Spot Essence,skincare,serum,JP,20,ml,1,Melano CC Medicated Intensive Anti-Spot Essence 20ml (JP),4987241169658,jan,false,beauty,clean
+Anessa,Perfect UV Sunscreen Skincare Milk N SPF50+ PA++++,skincare,sunscreen milk,JP,60,ml,1,Anessa Perfect UV Sunscreen Skincare Milk N SPF50+ PA++++ 60ml (JP),4909978120757,jan,true,beauty,clean
+Bioré,UV Aqua Rich Watery Essence SPF50+ PA++++,skincare,sunscreen essence gel,JP,70,g,1,Bioré UV Aqua Rich Watery Essence SPF50+ PA++++ 70g (JP),4901301447647,jan,true,beauty,clean
+Melano CC,Medicated Intensive Anti-Spot Essence,skincare,serum,JP,20,ml,1,Melano CC Medicated Intensive Anti-Spot Essence 20ml (JP),4987241169658,jan,true,beauty,clean
 Hada Labo,Gokujyun Hyaluronic Acid Lotion (Moist),skincare,toner lotion,JP,170,ml,1,Hada Labo Gokujyun Hyaluronic Acid Lotion (Moist) 170ml (JP),4987241155712,jan,false,beauty,variant-check
-Suisai,Beauty Clear Powder Wash N,skincare,enzyme cleansing powder capsules,JP,0.4,g,32,Suisai Beauty Clear Powder Wash N 0.4g (JP),4973167823859,jan,false,beauty,clean
-Senka,Perfect Whip Facial Cleansing Foam,skincare,cleansing foam,JP,120,g,1,Senka Perfect Whip Facial Cleansing Foam 120g (JP),4901872444915,jan,false,beauty,clean
+Suisai,Beauty Clear Powder Wash N,skincare,enzyme cleansing powder capsules,JP,0.4,g,32,Suisai Beauty Clear Powder Wash N 0.4g (JP),4973167823859,jan,true,beauty,clean
+Senka,Perfect Whip Facial Cleansing Foam,skincare,cleansing foam,JP,120,g,1,Senka Perfect Whip Facial Cleansing Foam 120g (JP),4901872444915,jan,true,beauty,clean
 Canmake,Marshmallow Finish Powder MO (Matte Ochre) SPF50,cosmetics,pressed face powder,JP,10,g,1,Canmake Marshmallow Finish Powder MO (Matte Ochre) SPF50 10g (JP),4901008304533,jan,false,beauty,price-needed
 Cezanne,UV Clear Face Powder 01 Light SPF28,cosmetics,pressed face powder,JP,10,g,1,Cezanne UV Clear Face Powder 01 Light SPF28 10g (JP),4939553040309,jan,false,beauty,price-needed
 Kate,Lip Monster 103 (Hidden Flame),cosmetics,lipstick,JP,3,g,1,Kate Lip Monster 103 (Hidden Flame) 3g (JP),4973167300886,jan,false,beauty,price-needed
 Curél,Intensive Moisture Care Facial Lotion III Enrich,skincare,toner lotion,JP,150,ml,1,Curél Intensive Moisture Care Facial Lotion III Enrich 150ml (JP),4901301236180,jan,false,beauty,variant-check
-DHC,Medicated Lip Cream,cosmetics,lip balm,JP,1.5,g,1,DHC Medicated Lip Cream 1.5g (JP),4511413302163,jan,false,beauty,clean
+DHC,Medicated Lip Cream,cosmetics,lip balm,JP,1.5,g,1,DHC Medicated Lip Cream 1.5g (JP),4511413302163,jan,true,beauty,clean
 LuLuLun,Precious RED (Moist) Face Mask 32 sheets,skincare,sheet mask box,JP,,,32,LuLuLun Precious RED (Moist) Face Mask 32 sheets (JP),4582305068801,jan,false,beauty,variant-check
 Fancl,Mild Cleansing Oil,skincare,cleansing oil,JP,120,ml,1,Fancl Mild Cleansing Oil 120ml (JP),4908049294953,jan,false,beauty,price-needed
 Minon,Amino Moist Moist Charge Lotion II,skincare,toner,JP,150,ml,1,Minon Amino Moist Moist Charge Lotion II 150ml (JP),4987107616395,jan,false,beauty,price-needed
-Fino,Premium Touch Penetrating Essence Hair Mask,cosmetics,rinse-off hair treatment mask,JP,230,g,1,Fino Premium Touch Penetrating Essence Hair Mask 230g (JP),4901872837144,jan,false,beauty,clean
-Merries,Sarasara Air Through Tape M (6-11kg),baby,tape diaper,JP,,,64,Merries Sarasara Air Through Tape M (6-11kg) (JP),4901301230843,jan,false,baby,clean
-Merries,Air Through Pants Big/XL (12-22kg),baby,pants diaper,JP,,,38,Merries Air Through Pants Big/XL (12-22kg) (JP),4901301425881,jan,false,baby,clean
-Natural Moony,Organic Cotton Tape M (6-11kg),baby,tape diaper,JP,,,46,Natural Moony Organic Cotton Tape M (6-11kg) (JP),4903111241439,jan,false,baby,clean
+Fino,Premium Touch Penetrating Essence Hair Mask,cosmetics,rinse-off hair treatment mask,JP,230,g,1,Fino Premium Touch Penetrating Essence Hair Mask 230g (JP),4901872837144,jan,true,beauty,clean
+Merries,Sarasara Air Through Tape M (6-11kg),baby,tape diaper,JP,,,64,Merries Sarasara Air Through Tape M (6-11kg) (JP),4901301230843,jan,true,baby,clean
+Merries,Air Through Pants Big/XL (12-22kg),baby,pants diaper,JP,,,38,Merries Air Through Pants Big/XL (12-22kg) (JP),4901301425881,jan,true,baby,clean
+Natural Moony,Organic Cotton Tape M (6-11kg),baby,tape diaper,JP,,,46,Natural Moony Organic Cotton Tape M (6-11kg) (JP),4903111241439,jan,true,baby,clean
 MamyPoko,Pants Doraemon Big (12-22kg),baby,pants diaper,JP,,,54,MamyPoko Pants Doraemon Big (12-22kg) (JP),4903111131525,jan,false,baby,variant-mismatch
 Pigeon,Baby Milk Lotion,baby,lotion,JP,120,g,1,Pigeon Baby Milk Lotion 120g (JP),4902508084543,jan,false,baby,availability-gap
 Atopita,Moisturizing Whole Body Milky Lotion,baby,lotion,JP,120,mL,1,Atopita Moisturizing Whole Body Milky Lotion 120mL (JP),4987133014516,jan,false,baby,availability-gap

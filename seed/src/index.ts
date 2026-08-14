@@ -25,14 +25,14 @@ const ALLOW_UNVERIFIED = args.has('--allow-unverified');
 
 const truthy = (v: string): boolean => /^(true|1|yes)$/i.test(v.trim());
 
-function gate(kind: string, gtin: string, verified: string): void {
+/**
+ * Returns true if the row should load. A bad barcode checksum is always fatal.
+ * An unverified row is SKIPPED (not fatal) unless --allow-unverified, so you can
+ * verify a subset (set verified=true) and load only those rows.
+ */
+function shouldLoad(kind: string, gtin: string, verified: string): boolean {
   if (!isValidGtin(gtin)) throw new Error(`${kind}: invalid barcode checksum "${gtin}"`);
-  if (!ALLOW_UNVERIFIED && !truthy(verified)) {
-    throw new Error(
-      `${kind} for ${gtin} is not verified. Verify the barcode + price, set verified=true, ` +
-        `or pass --allow-unverified for a local demo.`,
-    );
-  }
+  return ALLOW_UNVERIFIED || truthy(verified);
 }
 
 function requireEnv(name: string): string {
@@ -45,8 +45,10 @@ async function loadVariants(db: SupabaseClient): Promise<void> {
   const rows = parseCsv(readFileSync(join(DATA, 'variants.csv'), 'utf8'));
   const productIds = new Map<string, string>(); // brand|name|category|form -> product_id
 
+  let loaded = 0;
   for (const r of rows) {
-    gate('variant', r.gtin ?? '', r.verified ?? '');
+    if (!shouldLoad('variant', r.gtin ?? '', r.verified ?? '')) continue;
+    loaded += 1;
     const pkey = [r.brand, r.name, r.category, r.form].join('|');
     let productId = productIds.get(pkey);
     if (!productId) {
@@ -85,15 +87,19 @@ async function loadVariants(db: SupabaseClient): Promise<void> {
     });
     if (idErr) throw new Error(`identifier insert: ${idErr.message}`);
   }
-  console.log(`[seed] variants: ${rows.length} row(s)${DRY_RUN ? ' (dry-run)' : ' loaded'}`);
+  console.log(
+    `[seed] variants: ${loaded}/${rows.length} row(s)${DRY_RUN ? ' (dry-run)' : ' loaded'}, ${rows.length - loaded} skipped (unverified)`,
+  );
 }
 
 async function loadObservations(db: SupabaseClient): Promise<void> {
   const rows = parseCsv(readFileSync(join(DATA, 'observations.csv'), 'utf8'));
   const retailerIds = new Map<string, string>(); // name|country -> id
 
+  let loaded = 0;
   for (const r of rows) {
-    gate('observation', r.gtin ?? '', r.verified ?? '');
+    if (!shouldLoad('observation', r.gtin ?? '', r.verified ?? '')) continue;
+    loaded += 1;
     if (DRY_RUN) continue;
 
     const { data: ident, error: idErr } = await db
@@ -127,7 +133,9 @@ async function loadObservations(db: SupabaseClient): Promise<void> {
     });
     if (oErr) throw new Error(`observation insert: ${oErr.message}`);
   }
-  console.log(`[seed] observations: ${rows.length} row(s)${DRY_RUN ? ' (dry-run)' : ' loaded'}`);
+  console.log(
+    `[seed] observations: ${loaded}/${rows.length} row(s)${DRY_RUN ? ' (dry-run)' : ' loaded'}, ${rows.length - loaded} skipped (unverified)`,
+  );
 }
 
 async function main(): Promise<void> {

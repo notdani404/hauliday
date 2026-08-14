@@ -17,9 +17,9 @@ expensive thing to get wrong.
 - FX ingest worker, daily, with card-realistic rate alongside interbank
 - `price_estimate` materialised view: recency-weighted median, outlier rejection,
   source precedence
-- Seed ~200 JP cosmetics/skincare variants by hand with real barcodes and real
-  SG prices. Hand-seeded. Not generated — this is the accuracy baseline everything
-  is measured against.
+- Seed ~200 JP cosmetics/skincare + baby (non-formula) variants by hand with real
+  barcodes and real SG prices (D-020). Hand-seeded. Not generated — this is the
+  accuracy baseline everything is measured against.
 
 **Done when:** a SQL query returns a correct, confidence-scored SG estimate for a
 seeded JP variant, and the tests prove the zero-decimal and outlier cases.
@@ -80,7 +80,9 @@ Everything the barcode path misses.
 
 ## Deliberately later
 
-- Savings-per-litre and customs-threshold logic (v1 shows the raw delta plus a
-  graded verdict; the density model needs real usage data to calibrate)
+- Savings-per-litre logic (v1 shows the raw delta plus a graded verdict; the
+  density model needs real usage data to calibrate)
+- Customs-threshold logic — being pulled forward per D-020 (formula/regulated
+  segments need it as a first-class verdict constraint sooner than "later")
 - Price history charts
 - Any market beyond JP→SG

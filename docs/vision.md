@@ -58,6 +58,14 @@ repeat purchase, and a real availability gap (many JP-market SKUs genuinely aren
 sold in SG). Narrow catalogue, deep coverage. Being excellent for one vertical beats
 being thin across twenty.
 
+**Second wedge: JP baby products (non-formula) into Singapore** (D-020). Same
+research-obsessed, replenishment-driven audience and adjacent shops — diapers
+(Merries/Moony), baby skincare, wipes, bottles. **Formula is deliberately fenced
+off:** Singapore caps hand-carried infant formula at 5 kg / 5 L *and* ≤ S$100 per
+person, which defeats the haul thesis and would have us advise a purchase the law
+limits. It stays in the catalogue flagged as customs-limited, never headlined as
+"worth it" — until customs allowance is a first-class input to the verdict.
+
 ## Retention
 
 The trip is not the loop — most people travel two or three times a year. The loop is

@@ -171,3 +171,16 @@ Graded verdict states and cutoffs (Only-here / ≥25% Great / ≥10% Worth-it-if
 unit-tested pure package, not a screen. Effective dest price = shelf × (1 − tax-free) converted
 to home. Savings-per-litre and customs remain deferred (roadmap).
 2026-08
+
+**D-020 · Second wedge is JP baby (non-formula); formula is fenced off; customs becomes first-class sooner**
+Alongside JP cosmetics/skincare into SG, add **baby products (non-formula)** — same
+research-heavy, replenishment audience (diapers, baby skincare, wipes, bottles). **Infant/
+follow-up formula is included in the catalogue but flagged `customs-limited` and never surfaced
+as "worth it":** SG caps hand-carried formula at 5 kg/5 L *and* ≤ S$100/person, so a naive
+verdict would advise an illegal/over-limit haul. Consequence: **customs allowance is pulled
+forward from "deliberately later" toward a first-class verdict constraint** once beyond the
+clean beauty/diaper cases. Expansion order after these two: fragrance, then character/hobby
+goods (both maximise the availability-gap story with low regulatory drag). Supplements, food,
+and OTC medicine stay deferred until customs limits are modelled (HSA/SFA friction).
+*Rejected:* headlining formula (legal/quality risk); dropping baby entirely (strong fit).
+2026-08
