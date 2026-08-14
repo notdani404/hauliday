@@ -133,3 +133,41 @@ cloud project. Seed data (~200 JP cosmetics/skincare variants) is **hand-verifie
 loader validates barcode checksums and currency/decimal sanity, and any candidate list is
 treated as pending human verification, never as truth — it is the accuracy baseline.
 2026-08
+
+**D-015 · Flags live in an append-only `observation_flag` table, not a `flagged_count` column**
+`data-model.md` listed a `flagged_count` on `observation`, but a mutable counter is an
+overwrite — it breaks non-negotiable #1 (no row is ever overwritten). Flags are therefore
+their own append-only table (`observation_flag`, unique per user per observation); any count
+is derived. The estimate function excludes observations with ≥2 flags. `data-model.md` updated.
+*Rejected:* denormalised counter column (overwrites), allowing UPDATE only to that column
+(erodes the immutability guarantee the ledger depends on).
+2026-08
+
+**D-016 · Phase 1 unknown barcode = graceful miss + queue, no user catalogue writes yet**
+A scanned GTIN not in `identifier` shows "we don't have this yet" and queues the barcode for
+Phase 3 catalogue fill. Keeps Phase 1 the thinnest capture loop; user-created provisional
+variants (with dedupe + moderation) are deferred.
+*Rejected:* let users create variants now — real crowd-sourcing value, but pulls variant
+dedupe, equivalence, and abuse handling forward into the thin slice.
+2026-08
+
+**D-017 · Phase 1 conversion uses a bundled, dated FX snapshot (offline-first), not the live table**
+The FX worker is deferred, and capture must work with no signal (non-negotiable #6). The app
+ships a small committed rate snapshot (interbank + card-realistic, with an `as_of` date shown
+as a caveat). The worker later refreshes it; the on-device snapshot is required regardless for
+offline capture.
+*Rejected:* reading `fx_rate` live (empty until the worker runs; breaks offline).
+2026-08
+
+**D-018 · Mobile app at `/apps/mobile`; `/apps` joins the workspace**
+Extends D-013 with an `/apps` dir. Expo app at `/apps/mobile`, leaving room for `/apps/web`.
+*Rejected:* a flat `/app` at repo root — collides with expo-router's own `app/` routes
+convention and boxes out a future web app.
+2026-08
+
+**D-019 · Verdict is a pure `@hauliday/verdict` package; thresholds lifted from the prototype**
+Graded verdict states and cutoffs (Only-here / ≥25% Great / ≥10% Worth-it-if-it-fits /
+≥−8% About-the-same / else Cheaper-at-home) come from `reference/prototype.html` and live in a
+unit-tested pure package, not a screen. Effective dest price = shelf × (1 − tax-free) converted
+to home. Savings-per-litre and customs remain deferred (roadmap).
+2026-08

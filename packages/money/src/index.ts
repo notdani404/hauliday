@@ -10,6 +10,7 @@ export {
   subtract,
   compare,
   equals,
+  scale,
   convert,
 } from './money.js';
 export {

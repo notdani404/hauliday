@@ -9,6 +9,7 @@ import {
   compare,
   equals,
   convert,
+  scale,
   CurrencyMismatchError,
   MoneyParseError,
   minorUnits,
@@ -119,6 +120,18 @@ describe('convert across currencies', () => {
     const a = convert(money(1500n, 'JPY'), { base: 'JPY', quote: 'SGD', rate: 0.0091 });
     const b = convert(money(1500n, 'JPY'), { base: 'JPY', quote: 'SGD', rate: '0.0091' });
     expect(a.amountMinor).toBe(b.amountMinor);
+  });
+});
+
+describe('scale', () => {
+  it('applies a fractional multiplier with half-up rounding, same currency', () => {
+    expect(scale(money(3490n, 'SGD'), '0.9').amountMinor).toBe(3141n); // 10% off S$34.90
+    expect(scale(money(2530n, 'JPY'), 0.1).amountMinor).toBe(253n); // 10% tax portion
+    expect(scale(money(2530n, 'JPY'), '0.1').currency).toBe('JPY');
+  });
+  it('rounds half-up at the boundary', () => {
+    // 5 * 0.5 = 2.5 -> 3
+    expect(scale(money(5n, 'JPY'), '0.5').amountMinor).toBe(3n);
   });
 });
 

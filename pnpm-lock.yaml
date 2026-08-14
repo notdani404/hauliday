@@ -33,6 +33,19 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@20.19.43)
 
+  packages/verdict:
+    dependencies:
+      '@hauliday/money':
+        specifier: workspace:*
+        version: link:../money
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@20.19.43)
+
   seed:
     dependencies:
       '@supabase/supabase-js':

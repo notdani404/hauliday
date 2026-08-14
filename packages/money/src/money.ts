@@ -144,6 +144,18 @@ export function equals(a: Money, b: Money): boolean {
 }
 
 /**
+ * Multiply a money amount by a decimal factor (e.g. a tax-free rate), rounding
+ * half-up to the same currency's minor units. The factor is parsed exactly from
+ * its decimal form — no float drift. Stays in the same currency.
+ */
+export function scale(m: Money, factor: string | number): Money {
+  const { num, den } = parseDecimalToFraction(
+    typeof factor === 'number' ? factor.toString() : factor,
+  );
+  return money(divRoundHalfUp(m.amountMinor * num, den), m.currency);
+}
+
+/**
  * Convert across currencies at an explicit rate (quote units per 1 base unit),
  * rounding half-up to the target currency's minor units. The rate is parsed
  * exactly from its decimal form — no float drift. Refuses to convert unless
