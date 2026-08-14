@@ -1,8 +1,13 @@
-gtin,retailer,retailer_country,channel,amount_minor,currency,tax_inclusive,tax_rate_applied,observed_on,source,source_url,verified
-4901872046508,Matsukiyo,JP,in_store,2530,JPY,true,0.10,2026-08-01,human,,false
-4901872046508,Watsons,SG,in_store,3490,SGD,true,,2026-08-05,human,,false
-4901872123452,Matsukiyo,JP,in_store,1540,JPY,true,0.10,2026-08-01,human,,false
-4901872123452,Watsons,SG,in_store,2190,SGD,true,,2026-08-05,human,,false
-4905317654327,Matsukiyo,JP,in_store,968,JPY,true,0.10,2026-08-01,human,,false
-4569012345609,DHC Store,JP,in_store,1760,JPY,true,0.10,2026-08-01,human,,false
-4909998887777,Canmake,JP,in_store,935,JPY,true,0.10,2026-08-01,human,,false
+gtin,retailer,retailer_country,channel,amount_minor,currency,tax_inclusive,tax_rate_applied,observed_on,source,source_url,verified,flag
+4909978120757,NTUC FairPrice,SG,in_store,4700,SGD,true,,2026-08-14,human,https://www.fairprice.com.sg/product/anessa-perfect-uv-sunscreen-skincare-milk-spf-50-60ml-13247611,false,clean
+4901301447647,NTUC FairPrice,SG,in_store,1625,SGD,true,,2026-08-14,human,https://www.fairprice.com.sg/product/biore-uv-ar-w-esce-spf50-70g-13230501,false,clean
+4987241169658,Guardian,SG,in_store,1690,SGD,true,,2026-08-14,human,https://www.guardian.com.sg/melano-cc-intensive-anti-spot-essence-20ml/p/605673,false,clean
+4987241155712,Pupsik,SG,in_store,1130,SGD,true,,2026-08-14,human,https://pupsik.sg/products/hada-labo-gokujyun-hydrating-lotion-rich-170ml,false,variant-check
+4973167823859,Venus Beauty,SG,in_store,2700,SGD,true,,2026-08-14,human,https://www.venusbeauty.com.sg/kanebo-beauty-clear-powder-wash-box-0-4g-x-32s.html,false,clean
+4901872444915,NTUC FairPrice,SG,in_store,670,SGD,true,,2026-08-14,human,https://www.fairprice.com.sg/product/senka-facial-cleanser-perfect-whip-120g-13105645,false,clean
+4511413302163,Venus Beauty,SG,in_store,1090,SGD,true,,2026-08-14,human,https://www.venusbeauty.com.sg/dhc-medicated-lip-cream-1-5g.html,false,clean
+4582305068801,NTUC FairPrice,SG,in_store,3690,SGD,true,,2026-08-14,human,https://www.fairprice.com.sg/product/lululun-lululun-precious-moist-daily-toner-mask-32s-628-g-90141994,false,variant-check
+4901872837144,Pupsik,SG,in_store,1070,SGD,true,,2026-08-14,human,https://pupsik.sg/products/shiseido-fino-premium-touch-hair-mask-230g,false,clean
+4901301230843,NTUC FairPrice,SG,in_store,2710,SGD,true,,2026-08-14,human,https://www.fairprice.com.sg/product/merries-tape-diapers-m-6-11kg-64-per-pack-13017577,false,clean
+4901301425881,NTUC FairPrice,SG,in_store,2475,SGD,true,,2026-08-14,human,https://www.fairprice.com.sg/product/merries-pants-diaper-xl-12-22kg-38-per-pack-13239784,false,clean
+4903111241439,Amazon SG,SG,online,1640,SGD,true,,2026-08-14,human,https://www.amazon.sg/Moony-Natural-Tape-46-Count/dp/B07PJJVPCW,false,clean
