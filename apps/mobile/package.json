@@ -3,7 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "build:web": "expo export -p web",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -12,6 +16,7 @@
     "doctor": "expo-doctor"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~57.0.9",
     "@hauliday/db": "workspace:*",
     "@hauliday/money": "workspace:*",
     "@hauliday/verdict": "workspace:*",
@@ -26,10 +31,12 @@
     "expo-sqlite": "~57.0.1",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.86.2",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.2",
-    "react-native-url-polyfill": "^2.0.0"
+    "react-native-url-polyfill": "^2.0.0",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
