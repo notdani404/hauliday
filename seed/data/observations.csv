@@ -1,0 +1,8 @@
+gtin,retailer,retailer_country,channel,amount_minor,currency,tax_inclusive,tax_rate_applied,observed_on,source,source_url,verified
+4901872046508,Matsukiyo,JP,in_store,2530,JPY,true,0.10,2026-08-01,human,,false
+4901872046508,Watsons,SG,in_store,3490,SGD,true,,2026-08-05,human,,false
+4901872123452,Matsukiyo,JP,in_store,1540,JPY,true,0.10,2026-08-01,human,,false
+4901872123452,Watsons,SG,in_store,2190,SGD,true,,2026-08-05,human,,false
+4905317654327,Matsukiyo,JP,in_store,968,JPY,true,0.10,2026-08-01,human,,false
+4569012345609,DHC Store,JP,in_store,1760,JPY,true,0.10,2026-08-01,human,,false
+4909998887777,Canmake,JP,in_store,935,JPY,true,0.10,2026-08-01,human,,false

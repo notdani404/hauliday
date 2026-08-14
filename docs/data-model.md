@@ -45,7 +45,10 @@ observation       THE LEDGER. Append-only.
 fx_rate           base, quote, rate, as_of, source. Daily close.
                   Also store a card_realistic rate (interbank + spread).
 
-price_estimate    Materialised view, refreshed on write.
+price_estimate    A SQL function price_estimate(variant_id, country, channel)
+                  computes the estimate on demand; a materialised view
+                  price_estimate_mv caches it catalogue-wide, refreshed by the
+                  worker on a debounce (not per-insert). See decisions D-011.
                   variant_id × country × channel →
                   amount_minor, currency, confidence, observation_count,
                   freshest_observed_on, dominant_source

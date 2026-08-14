@@ -94,3 +94,42 @@ API. Open Food Facts and GS1 for identity resolution, not price.
 SERP APIs (SerpApi, DataForSEO, Oxylabs) are a fallback with real ToS and continuity
 risk — not a foundation.
 2026-08
+
+**D-011 · `price_estimate` is a SQL function first, a materialised view second**
+`data-model.md` described `price_estimate` as "a materialised view, refreshed on write."
+A true MV refreshed on every observation insert is expensive and couples the write path
+to a full recompute. Refinement: the estimate logic lives in a **SQL function**
+`price_estimate(variant_id, country, channel)` — this is what the Phase 0 "done when"
+query calls and what the tests prove — and a **materialised view** `price_estimate_mv`
+over the whole catalogue is refreshed by the worker tier on a debounce (`REFRESH
+MATERIALIZED VIEW CONCURRENTLY`), **not** by a per-insert trigger. Same result, sane
+write path. `data-model.md` updated to match.
+*Rejected:* per-insert trigger refresh (write amplification), plain view only (too slow
+for catalogue-wide reads once seeded).
+2026-08
+
+**D-012 · Open Exchange Rates as the FX source; card-realistic = interbank × (1 + spread)**
+Reliable JPY/SGD/KRW/THB/TWD coverage, daily close, generous free tier. We store the
+interbank `rate` and a `card_realistic` rate = `rate × (1 + spread)`, spread configurable
+(~2%, env `FX_CARD_SPREAD`) to model what a card actually charges (vision.md: interbank
+lies by 1–3%). Worker is a plain Node script in Phase 0; Fly.io deploy comes later.
+*Rejected:* ECB reference rates (EUR-based, needs cross-rates, no card-realistic notion);
+exchangerate.host (thinner reliability guarantees for a number we build verdicts on).
+2026-08
+
+**D-013 · pnpm monorepo workspace layout**
+`/supabase` (migrations, seed, generated types), `/packages/money` (pure-TS Money type +
+currency helpers, zero deps), `/packages/db` (committed generated types + shared query
+helpers), `/workers/fx` (FX ingest; Fly.io later), `/seed` (curated CSVs + loader). Lets
+the Phase 1 Expo app and Phase 2+ workers slot in without restructuring.
+*Rejected:* flat single-package repo (would force a restructure at Phase 1); Nx/Turbo
+(overkill for a solo side project at this stage).
+2026-08
+
+**D-014 · Local DB runtime via a container runtime (OrbStack); seed data is verified, not generated**
+Migrations are developed and tested locally against a disposable `supabase db reset`
+Postgres (needs a container runtime — OrbStack recommended), then pushed to the personal
+cloud project. Seed data (~200 JP cosmetics/skincare variants) is **hand-verified**: the
+loader validates barcode checksums and currency/decimal sanity, and any candidate list is
+treated as pending human verification, never as truth — it is the accuracy baseline.
+2026-08

@@ -1,0 +1,6 @@
+packages:
+  - packages/*
+  - workers/*
+  - seed
+allowBuilds:
+  esbuild: true

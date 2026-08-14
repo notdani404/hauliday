@@ -1,0 +1,27 @@
+{
+  "name": "hauliday",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push",
+    "db:test": "supabase test db",
+    "db:diff": "supabase db diff",
+    "gen:types": "supabase gen types typescript --local > packages/db/src/database.types.ts",
+    "fx:pull": "pnpm --filter @hauliday/fx start",
+    "seed:load": "pnpm --filter @hauliday/seed start"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
