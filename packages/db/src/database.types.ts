@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.15"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       fx_rate: {
@@ -566,6 +591,14 @@ export type Database = {
           item_count: number
         }[]
       }
+      find_or_create_retailer: {
+        Args: {
+          p_channel?: Database["public"]["Enums"]["channel"]
+          p_country: string
+          p_name: string
+        }
+        Returns: string
+      }
       find_or_create_store: {
         Args: { p_area?: string; p_name: string; p_retailer_id: string }
         Returns: string
@@ -792,6 +825,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       channel: ["online", "in_store"],

@@ -34,11 +34,16 @@ export function TripHeader() {
             accessibilityState={{ selected: mode === m }}
           >
             <Text style={[styles.modeText, mode === m && styles.modeTextSel]}>
-              {m === 'abroad' ? 'Abroad' : 'Home'}
+              {m === 'abroad' ? "I'm travelling" : "I'm home"}
             </Text>
           </Pressable>
         ))}
       </View>
+      <Text style={styles.modeHint}>
+        {mode === 'abroad'
+          ? 'Scan abroad — see if it beats the price back home.'
+          : 'Scan at home — compare prices between local stores.'}
+      </Text>
       {mode === 'abroad' ? (
         <Pressable style={styles.trip} onPress={() => router.push('/dest-country')}>
           <Text style={styles.tripText}>
@@ -134,6 +139,7 @@ const styles = StyleSheet.create({
   modeChipSel: { borderColor: theme.coral, backgroundColor: '#FDECEE' },
   modeText: { fontSize: 13, fontWeight: '700', color: theme.slate },
   modeTextSel: { color: theme.coral },
+  modeHint: { fontSize: 12, color: theme.slate, lineHeight: 16, paddingHorizontal: 2 },
   trip: {
     flexDirection: 'row',
     alignItems: 'center',

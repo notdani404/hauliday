@@ -8,7 +8,9 @@ export function localDateISO(d: Date = new Date()): string {
 
 export interface ObservationInput {
   variantId: string;
-  retailerId: string;
+  retailerId?: string; // picked from the list…
+  retailerName?: string; // …or typed free-text (resolved/created at sync time)
+  retailerCountry?: string; // market the chain was seen in (for create/dedup)
   channel: 'in_store' | 'online';
   amountMinor: number;
   currency: string;

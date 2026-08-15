@@ -9,8 +9,17 @@ import { useTrip } from '../lib/trip';
 import { taxFreeRate } from '../lib/markets';
 import { FX_SNAPSHOT } from '../lib/fxSnapshot';
 import { useWatch } from '../lib/useWatch';
-import { Button } from '../lib/ui';
+import { Button, confidenceLabel } from '../lib/ui';
 import { theme } from '../lib/theme';
+
+function daysAgo(dateISO: string | null): string {
+  if (!dateISO) return '';
+  const days = Math.max(0, Math.round((Date.now() - new Date(dateISO + 'T00:00:00Z').getTime()) / 86400000));
+  if (days === 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 30) return `${days} days ago`;
+  return `${Math.round(days / 30)} mo ago`;
+}
 
 const VERDICT_BG: Record<VerdictState, string> = {
   great: theme.green,
@@ -22,7 +31,7 @@ const VERDICT_BG: Record<VerdictState, string> = {
 
 export default function Result() {
   const { session } = useCapture();
-  const { dest } = useTrip();
+  const { dest, home } = useTrip();
   const { ids, toggle } = useWatch();
 
   useEffect(() => {
@@ -31,8 +40,17 @@ export default function Result() {
   if (!session || !dest || session.destShelfMinor == null) return null;
 
   const destShelf = money(session.destShelfMinor, dest.currency);
-  const homeRef =
-    session.home?.inStore?.price ?? session.home?.online?.price ?? null;
+  // The home reference the verdict is computed against — carry the whole estimate,
+  // not just the number, so we can show its channel, age, and corroboration (#4).
+  // In-store is the like-for-like comparison to a shelf price; online is a labelled
+  // fallback (#3 — we never blend the two silently).
+  const homeEst = session.home?.inStore ?? session.home?.online ?? null;
+  const homeChannel: 'in_store' | 'online' | null = session.home?.inStore
+    ? 'in_store'
+    : session.home?.online
+      ? 'online'
+      : null;
+  const homeRef = homeEst?.price ?? null;
   const rate = FX_SNAPSHOT.perUnitSGD[dest.currency];
 
   const verdict = computeVerdict({
@@ -73,8 +91,32 @@ export default function Result() {
           {taxFreeRate(dest.code) === 0 && (
             <Row k="In home currency" v={`≈ ${format(verdict.effectiveHome)}`} />
           )}
-          {homeRef && <Row k="Typical at home" v={format(homeRef)} />}
         </View>
+
+        {homeRef && homeEst ? (
+          <View style={styles.homeRefCard}>
+            <View style={styles.homeRefTop}>
+              <Text style={styles.homeRefLabel}>
+                Typical {homeChannel === 'online' ? 'online' : 'in-store'} price in {home.name}
+              </Text>
+              <Text style={styles.homeRefValue}>{format(homeRef)}</Text>
+            </View>
+            <View style={styles.homeRefMetaRow}>
+              <Text style={styles.homeRefMeta}>
+                {homeEst.observationCount} shopper{homeEst.observationCount === 1 ? '' : 's'} ·{' '}
+                {daysAgo(homeEst.freshestObservedOn)}
+              </Text>
+              <View style={[styles.confPill, styles[`conf_${confidenceLabel(homeEst.confidence)}`]]}>
+                <Text style={styles.confText}>{confidenceLabel(homeEst.confidence)} confidence</Text>
+              </View>
+            </View>
+            {homeChannel === 'online' ? (
+              <Text style={styles.homeRefNote}>
+                No in-store price at home yet — compared against the online price.
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
 
         <Text style={styles.fxNote}>Card FX as of {FX_SNAPSHOT.asOf} · verdict excludes shipping.</Text>
       </ScrollView>
@@ -129,6 +171,25 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   rowK: { fontSize: 13, color: theme.slate, flexShrink: 1 },
   rowV: { fontSize: 14, fontWeight: '700', color: theme.ink, textAlign: 'right' },
+  homeRefCard: {
+    backgroundColor: theme.white,
+    borderWidth: 1,
+    borderColor: theme.line,
+    borderRadius: 14,
+    padding: 14,
+    gap: 8,
+  },
+  homeRefTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  homeRefLabel: { fontSize: 13, color: theme.slate, fontWeight: '600', flexShrink: 1 },
+  homeRefValue: { fontSize: 18, fontWeight: '800', color: theme.ink },
+  homeRefMetaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  homeRefMeta: { fontSize: 12, color: theme.slate, flexShrink: 1 },
+  homeRefNote: { fontSize: 11.5, color: theme.slate, fontStyle: 'italic', lineHeight: 16 },
+  confPill: { alignSelf: 'flex-start', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 },
+  conf_high: { backgroundColor: '#E4F3EA' },
+  conf_medium: { backgroundColor: '#FBF0DC' },
+  conf_low: { backgroundColor: '#F0ECEA' },
+  confText: { fontSize: 11, fontWeight: '700', color: theme.ink },
   fxNote: { fontSize: 11, color: theme.slate, textAlign: 'center' },
   footer: { paddingBottom: 24, paddingTop: 8 },
 });

@@ -336,3 +336,16 @@ variant+retailer+in_store already exists; never re-runs the non-idempotent CSV l
 stays append-only). Don Don Donki (the JP-goods discount chain) lands cheapest, which is both
 realistic and on-narrative. Script lives in scratchpad, not the repo.
 2026-08
+
+**D-035 · Contributors can add a retailer free-text; captured prices never strand (M17)**
+Audit found Contribute was a dead end when a market has no seeded retailers — the "Share
+this price" button stayed disabled with no fallback, losing the price. Added
+`find_or_create_retailer(name, country, channel)` (SECURITY DEFINER, dedups on lower(name)+
+country, mirrors `find_or_create_store`; granted to authenticated, which anon users inherit)
+and a free-text retailer field on the submit screen (shown when the list is empty, or via
+"Don't see it? Add a retailer"). The chain is resolved/created at SYNC time in the queue, so it
+stays offline-safe. Also from the same audit pass: the verdict screen now shows the home
+reference with its channel + shopper count + age + confidence (no bare number, #4/#3), and the
+Abroad/Home toggle is relabelled "I'm travelling / I'm home" with a one-line hint so the verdict
+never silently disappears; product's CTA routes to the destination picker instead of bouncing.
+2026-08

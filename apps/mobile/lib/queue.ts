@@ -7,7 +7,9 @@ const QUEUE_KEY = 'hauliday.obsqueue.v1';
 export interface PendingObservation {
   localId: string;
   variantId: string;
-  retailerId: string;
+  retailerId?: string; // resolved chain; absent when the user typed a new one
+  retailerName?: string; // free-text chain, resolved/created at sync time
+  retailerCountry?: string; // where that chain was seen (for dedup on create)
   channel: 'in_store' | 'online';
   amountMinor: number;
   currency: string;
@@ -60,13 +62,34 @@ export async function flush(): Promise<{ synced: number; remaining: number }> {
   let synced = 0;
 
   for (const it of items) {
+    // Resolve the retailer (chain) first: prefer the picked id, else create/look
+    // up the free-text chain the user typed (offline-first: name captured locally,
+    // row resolved when back online). No retailer → can't insert; keep it queued.
+    let retailerId = it.retailerId ?? null;
+    if (!retailerId && it.retailerName) {
+      const { data, error: rErr } = await supabase.rpc('find_or_create_retailer', {
+        p_name: it.retailerName,
+        p_country: (it.retailerCountry ?? '').toUpperCase(),
+        p_channel: it.channel,
+      });
+      if (rErr || !data) {
+        stillPending.push(it);
+        continue;
+      }
+      retailerId = data as string;
+    }
+    if (!retailerId) {
+      stillPending.push(it);
+      continue;
+    }
+
     // Resolve the specific store at sync time (offline-first: the name was
     // captured locally; the store row is created/looked up when back online).
     let storeId: string | null = null;
     if (it.channel === 'in_store' && it.placeId) {
       // Preferred: exact Google Place → store with coords.
       const { data, error: pErr } = await supabase.rpc('find_or_create_store_by_place', {
-        p_retailer_id: it.retailerId,
+        p_retailer_id: retailerId,
         p_place_id: it.placeId,
         p_name: it.placeName ?? it.storeName ?? '',
         p_address: it.placeAddress ?? undefined,
@@ -81,7 +104,7 @@ export async function flush(): Promise<{ synced: number; remaining: number }> {
     } else if (it.channel === 'in_store' && it.storeName) {
       // Fallback: free-text branch + area.
       const { data, error: sErr } = await supabase.rpc('find_or_create_store', {
-        p_retailer_id: it.retailerId,
+        p_retailer_id: retailerId,
         p_name: it.storeName,
         p_area: it.storeArea ?? undefined,
       });
@@ -94,7 +117,7 @@ export async function flush(): Promise<{ synced: number; remaining: number }> {
 
     const { error } = await supabase.from('observation').insert({
       variant_id: it.variantId,
-      retailer_id: it.retailerId,
+      retailer_id: retailerId,
       store_id: storeId,
       channel: it.channel,
       amount_minor: it.amountMinor,

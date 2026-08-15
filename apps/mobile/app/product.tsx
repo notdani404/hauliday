@@ -47,7 +47,7 @@ function EstimateCard({ label, est }: { label: string; est: Estimate | null }) {
 export default function Product() {
   const { session } = useCapture();
   const { ids, toggle } = useWatch();
-  const { mode, home } = useTrip();
+  const { mode, home, dest } = useTrip();
   const [retailerPrices, setRetailerPrices] = useState<RetailerPrice[] | null>(null);
 
   const variantId = session?.variant?.variantId;
@@ -151,7 +151,14 @@ export default function Product() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Log the price you see" onPress={() => router.push('/price')} />
+        {mode === 'abroad' && !dest ? (
+          <Button title="Pick a destination first" onPress={() => router.push('/dest-country')} />
+        ) : (
+          <Button
+            title={mode === 'home' ? 'Log a local price' : 'Log the price you see'}
+            onPress={() => router.push('/price')}
+          />
+        )}
       </View>
     </SafeAreaView>
   );

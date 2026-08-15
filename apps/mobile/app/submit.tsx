@@ -25,6 +25,8 @@ export default function Submit() {
   const [retailers, setRetailers] = useState<RetailerOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [retailerId, setRetailerId] = useState<string | null>(null);
+  const [retailerName, setRetailerName] = useState('');
+  const [addingRetailer, setAddingRetailer] = useState(false);
   const [channel, setChannel] = useState<Channel>('in_store');
   const [storeName, setStoreName] = useState('');
   const [storeArea, setStoreArea] = useState('');
@@ -73,14 +75,19 @@ export default function Submit() {
     }
   }
 
+  const typedRetailer = retailerName.trim();
+  const hasRetailer = !!retailerId || typedRetailer.length > 0;
+
   async function submit() {
-    if (!retailerId || !session?.variant || session.destShelfMinor == null || !dest) return;
+    if (!hasRetailer || !session?.variant || session.destShelfMinor == null || !dest) return;
     const inStore = channel === 'in_store';
     setBusy(true);
     try {
       const res = await captureObservation({
         variantId: session.variant.variantId,
-        retailerId,
+        ...(retailerId
+          ? { retailerId }
+          : { retailerName: typedRetailer, retailerCountry: dest.code }),
         channel,
         amountMinor: Number(session.destShelfMinor),
         currency: dest.currency,
@@ -128,15 +135,45 @@ export default function Submit() {
           <Text style={styles.label}>Retailer</Text>
           {loading ? (
             <Text style={styles.note}>Loading stores…</Text>
-          ) : retailers.length === 0 ? (
-            <Text style={styles.note}>No {dest.name} retailers yet. As prices come in, you'll pick one here.</Text>
           ) : (
-            retailers.map((r) => (
-              <Pressable key={r.id} style={[styles.row, retailerId === r.id && styles.rowSel]} onPress={() => setRetailerId(r.id)}>
-                <Text style={styles.rowName}>{r.name}</Text>
-                {retailerId === r.id && <Text style={styles.tick}>✓</Text>}
-              </Pressable>
-            ))
+            <>
+              {retailers.map((r) => (
+                <Pressable
+                  key={r.id}
+                  style={[styles.row, retailerId === r.id && styles.rowSel]}
+                  onPress={() => {
+                    setRetailerId(r.id);
+                    setRetailerName('');
+                    setAddingRetailer(false);
+                  }}
+                >
+                  <Text style={styles.rowName}>{r.name}</Text>
+                  {retailerId === r.id && <Text style={styles.tick}>✓</Text>}
+                </Pressable>
+              ))}
+
+              {retailers.length === 0 && (
+                <Text style={styles.note}>No {dest.name} retailers yet — add the one you saw.</Text>
+              )}
+
+              {retailers.length === 0 || addingRetailer ? (
+                <TextInput
+                  style={styles.input}
+                  value={retailerName}
+                  onChangeText={(t) => {
+                    setRetailerName(t);
+                    setRetailerId(null);
+                  }}
+                  placeholder={`Store chain, e.g. ${dest.code === 'TH' ? 'Boots' : 'Watsons'}`}
+                  placeholderTextColor={theme.slate}
+                  autoFocus={addingRetailer}
+                />
+              ) : (
+                <Pressable onPress={() => setAddingRetailer(true)} hitSlop={8}>
+                  <Text style={styles.link}>Don't see it? Add a retailer</Text>
+                </Pressable>
+              )}
+            </>
           )}
 
           {channel === 'in_store' && (
@@ -189,7 +226,7 @@ export default function Submit() {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button title={busy ? 'Saving…' : 'Share this price'} onPress={() => void submit()} disabled={!retailerId || busy} />
+          <Button title={busy ? 'Saving…' : 'Share this price'} onPress={() => void submit()} disabled={!hasRetailer || busy} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
