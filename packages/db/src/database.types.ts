@@ -499,16 +499,25 @@ export type Database = {
       watchlist: {
         Row: {
           created_at: string
+          note: string | null
+          target_amount_minor: number | null
+          target_currency: string | null
           user_id: string
           variant_id: string
         }
         Insert: {
           created_at?: string
+          note?: string | null
+          target_amount_minor?: number | null
+          target_currency?: string | null
           user_id: string
           variant_id: string
         }
         Update: {
           created_at?: string
+          note?: string | null
+          target_amount_minor?: number | null
+          target_currency?: string | null
           user_id?: string
           variant_id?: string
         }
@@ -589,6 +598,27 @@ export type Database = {
           product_name: string
           size_unit: string
           size_value: number
+          variant_id: string
+        }[]
+      }
+      watchlist_items: {
+        Args: { p_country?: string }
+        Returns: {
+          brand: string
+          canonical_name: string
+          est_amount_minor: number
+          est_confidence: number
+          est_count: number
+          est_currency: string
+          gtin: string
+          market: string
+          note: string
+          product_name: string
+          saved_at: string
+          size_unit: string
+          size_value: number
+          target_amount_minor: number
+          target_currency: string
           variant_id: string
         }[]
       }

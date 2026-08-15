@@ -5,6 +5,8 @@ import {
   subtract,
   convert,
   format,
+  fromDecimal,
+  minorUnits,
 } from '@hauliday/money';
 
 /**
@@ -126,4 +128,24 @@ export function computeVerdict(input: VerdictInput): Verdict {
 /** True if the destination is worth the luggage (great, worth_it, or only-here). */
 export function isWorthHauling(v: Verdict): boolean {
   return v.state === 'great' || v.state === 'worth_it' || v.state === 'only_here';
+}
+
+/**
+ * "What a good price looks like when you get there" — the destination shelf price
+ * (before tax refund) that would clear the worth-it (≥10%) and great (≥25%)
+ * thresholds versus the home estimate. Inverse of computeVerdict. Guidance
+ * figures, so plain float math + currency rounding is fine.
+ */
+export function suggestedShelfTargets(
+  homeReference: Money,
+  opts: { taxFreeRate: number; rate: string | number; destCurrency: CurrencyCode },
+): { worthIt: Money; great: Money } {
+  const homeDecimal = Number(homeReference.amountMinor) / 10 ** minorUnits(homeReference.currency);
+  const rate = typeof opts.rate === 'number' ? opts.rate : parseFloat(opts.rate);
+  const shelfFor = (savingsFraction: number): Money => {
+    // effectiveHome = home*(1-savings); effectiveDest = effectiveHome/rate; shelf = effectiveDest/(1-taxFree)
+    const shelf = (homeDecimal * (1 - savingsFraction)) / rate / (1 - opts.taxFreeRate);
+    return fromDecimal(shelf.toFixed(6), opts.destCurrency);
+  };
+  return { worthIt: shelfFor(0.1), great: shelfFor(0.25) };
 }

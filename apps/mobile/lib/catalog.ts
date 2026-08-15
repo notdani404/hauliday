@@ -239,38 +239,77 @@ export async function removeWatch(variantId: string): Promise<void> {
 
 export interface WatchItem {
   variant: ResolvedVariant;
+  gtin: string | null;
+  homePrice: Money | null;
+  confidence: number;
+  observationCount: number;
+  target: Money | null;
+  note: string | null;
 }
 
-/** The user's saved variants with product details, newest first. */
-export async function getWatchlist(): Promise<WatchItem[]> {
-  const { data, error } = await supabase
-    .from('watchlist')
-    .select(
-      'variant_id, created_at, product_variant!inner(id, market, size_value, size_unit, canonical_name, product!inner(brand, name))',
-    )
-    .order('created_at', { ascending: false });
+/** The user's saved variants with home estimate + target inline, newest first. */
+export async function getWatchlist(country = 'SG'): Promise<WatchItem[]> {
+  const { data, error } = await supabase.rpc('watchlist_items', { p_country: country });
   if (error || !data) return [];
   const rows = data as unknown as Array<{
-    product_variant: {
-      id: string;
-      market: string;
-      size_value: number | null;
-      size_unit: string | null;
-      canonical_name: string;
-      product: { brand: string; name: string };
-    };
+    variant_id: string;
+    brand: string;
+    product_name: string;
+    canonical_name: string;
+    market: string;
+    size_value: number | null;
+    size_unit: string | null;
+    gtin: string | null;
+    est_amount_minor: number | null;
+    est_currency: string | null;
+    est_confidence: number | null;
+    est_count: number | null;
+    target_amount_minor: number | null;
+    target_currency: string | null;
+    note: string | null;
   }>;
   return rows.map((r) => ({
     variant: {
-      variantId: r.product_variant.id,
-      brand: r.product_variant.product.brand,
-      productName: r.product_variant.product.name,
-      canonicalName: r.product_variant.canonical_name,
-      market: r.product_variant.market,
-      sizeValue: r.product_variant.size_value,
-      sizeUnit: r.product_variant.size_unit,
+      variantId: r.variant_id,
+      brand: r.brand,
+      productName: r.product_name,
+      canonicalName: r.canonical_name,
+      market: r.market,
+      sizeValue: r.size_value,
+      sizeUnit: r.size_unit,
     },
+    gtin: r.gtin,
+    homePrice:
+      r.est_amount_minor != null && r.est_currency != null && isCurrencyCode(r.est_currency)
+        ? money(BigInt(r.est_amount_minor), r.est_currency)
+        : null,
+    confidence: Number(r.est_confidence ?? 0),
+    observationCount: r.est_count ?? 0,
+    target:
+      r.target_amount_minor != null && r.target_currency != null && isCurrencyCode(r.target_currency)
+        ? money(BigInt(r.target_amount_minor), r.target_currency)
+        : null,
+    note: r.note,
   }));
+}
+
+/** Set (or clear, with null) the user's target price + note for a watched variant. */
+export async function setWatchlistTarget(
+  variantId: string,
+  target: Money | null,
+  note: string | null,
+): Promise<void> {
+  const uid = await currentUid();
+  if (!uid) return;
+  await supabase
+    .from('watchlist')
+    .update({
+      target_amount_minor: target ? Number(target.amountMinor) : null,
+      target_currency: target ? target.currency : null,
+      note: note && note.trim() ? note.trim() : null,
+    })
+    .eq('user_id', uid)
+    .eq('variant_id', variantId);
 }
 
 export interface HomeEstimates {

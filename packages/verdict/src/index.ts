@@ -4,5 +4,6 @@ export {
   type Verdict,
   computeVerdict,
   isWorthHauling,
+  suggestedShelfTargets,
 } from './verdict';
 export { TAX_FREE_RATE, taxFreeRate } from './taxfree';

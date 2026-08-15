@@ -1,33 +1,45 @@
 import { useCallback, useState } from 'react';
 import { Text, View, Pressable, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { format } from '@hauliday/money';
+import { suggestedShelfTargets } from '@hauliday/verdict';
+import { useTrip } from '../../lib/trip';
+import { taxFreeRate } from '../../lib/markets';
+import { FX_SNAPSHOT } from '../../lib/fxSnapshot';
 import { getWatchlist, removeWatch, type WatchItem } from '../../lib/catalog';
-import { useOpenVariant } from '../../lib/useOpenVariant';
-import { BrandMark, WatchHeart } from '../../lib/ui';
+import { BrandMark, WatchHeart, moneyText } from '../../lib/ui';
 import { theme } from '../../lib/theme';
 
 export default function WatchlistTab() {
-  const openVariant = useOpenVariant();
+  const { home, dest } = useTrip();
   const [items, setItems] = useState<WatchItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   const reload = useCallback(() => {
-    void getWatchlist().then((r) => {
+    void getWatchlist(home.code).then((r) => {
       setItems(r);
       setLoaded(true);
     });
-  }, []);
+  }, [home.code]);
 
-  useFocusEffect(
-    useCallback(() => {
-      reload();
-    }, [reload]),
-  );
+  useFocusEffect(useCallback(() => reload(), [reload]));
 
   async function remove(variantId: string) {
     setItems((prev) => prev.filter((i) => i.variant.variantId !== variantId));
     await removeWatch(variantId);
+  }
+
+  function lookFor(item: WatchItem): string | null {
+    if (!item.homePrice || !dest) return null;
+    const rate = FX_SNAPSHOT.perUnitSGD[dest.currency];
+    if (!rate) return null;
+    const t = suggestedShelfTargets(item.homePrice, {
+      taxFreeRate: taxFreeRate(dest.code),
+      rate,
+      destCurrency: dest.currency,
+    });
+    return `In ${dest.name}: worth it under ${format(t.worthIt)}`;
   }
 
   return (
@@ -37,8 +49,9 @@ export default function WatchlistTab() {
       </View>
       <Text style={styles.title}>Watchlist</Text>
       <Text style={styles.sub}>
-        Things you want to buy abroad. Pre-trip price alerts are coming — for now, tap one to check
-        the current home price and log what you see.
+        {dest
+          ? `What to look for in ${dest.name}. Tap an item to set a target or log a price.`
+          : 'Pick a destination to see what a good price looks like there.'}
       </Text>
 
       <FlatList
@@ -52,23 +65,30 @@ export default function WatchlistTab() {
             </Text>
           ) : null
         }
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Pressable style={styles.rowMain} onPress={() => void openVariant(item.variant, null)}>
-              <Text style={styles.brand}>{item.variant.brand}</Text>
-              <Text style={styles.name} numberOfLines={2}>
-                {item.variant.productName}
-              </Text>
-              <Text style={styles.meta}>
-                {item.variant.sizeValue
-                  ? `${item.variant.sizeValue}${item.variant.sizeUnit ?? ''} · `
-                  : ''}
-                {item.variant.market} market
-              </Text>
-            </Pressable>
-            <WatchHeart active onPress={() => void remove(item.variant.variantId)} />
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const look = lookFor(item);
+          return (
+            <View style={styles.row}>
+              <Pressable
+                style={styles.rowMain}
+                onPress={() =>
+                  router.push({ pathname: '/watch/[variantId]', params: { variantId: item.variant.variantId } })
+                }
+              >
+                <Text style={styles.brand}>{item.variant.brand}</Text>
+                <Text style={styles.name} numberOfLines={2}>
+                  {item.variant.productName}
+                </Text>
+                <Text style={styles.meta}>
+                  {item.homePrice ? `${moneyText(item.homePrice)} home` : 'no home price'}
+                  {item.target ? `  ·  target ${format(item.target)}` : ''}
+                </Text>
+                {look && <Text style={styles.look}>{look}</Text>}
+              </Pressable>
+              <WatchHeart active onPress={() => void remove(item.variant.variantId)} />
+            </View>
+          );
+        }}
       />
     </SafeAreaView>
   );
@@ -94,4 +114,5 @@ const styles = StyleSheet.create({
   brand: { fontSize: 11, color: theme.coral, fontWeight: '700', textTransform: 'uppercase' },
   name: { fontSize: 14, fontWeight: '600', color: theme.ink, marginTop: 1 },
   meta: { fontSize: 11, color: theme.slate, marginTop: 2 },
+  look: { fontSize: 12, color: theme.green, fontWeight: '600', marginTop: 4 },
 });

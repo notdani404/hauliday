@@ -57,6 +57,22 @@ rather than working around it.
 - Generated Supabase types are committed and regenerated after every migration.
 - RLS on from the first table, not retrofitted.
 
+## Commits
+
+Dan the Lion's repo, Dan the Lion's voice. Write commits the way he'd say it out loud.
+
+- **Short subject, does the work on its own.** Sentence case, no full stop, ideally
+  ≤65 chars. `+`, `;`, `:` to pack related bits: `Catalogue browse + watchlist (D-025)`.
+- **Casual, dry, idiosyncratic.** Contractions and lowercase where natural, a bit of wry
+  shorthand is welcome (`baby scope`, `fast-follow`, `tidy Supabase site_url`). Plain
+  English over ceremony — never corporate release-note voice.
+- **Tag the decision/migration.** End the subject with `(D-0XX)` when a commit realises a
+  decision, and name migrations inline (`M12`) when relevant.
+- **Body only when it earns it.** Skip it for small stuff. When a change is meaty, a tight
+  wrapped paragraph on the *what + why* is fine — keep it lean, no bullet dumps.
+- **No trailers. Ever.** No `Co-Authored-By`, no `Generated with`, no `Claude-Session`,
+  no `🤖` line. The message ends at the last real sentence. See [[no-coauthored-commit-line]].
+
 ## Working agreement
 
 - Plan before you build. For anything touching schema, recognition, or pricing logic,

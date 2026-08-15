@@ -256,3 +256,15 @@ destination is set yet, else the Scan tab.
 *Rejected:* mandatory sign-in (gates the loop); one big profile form (wizard is gentler);
 gating onboarding behind email/phone verification.
 2026-08
+
+**D-027 · Watchlist build-out: targets + "what a good price looks like"**
+Watchlist rows now carry the home estimate inline (`watchlist_items` RPC, M13) and show a
+computed **"worth it under X" / "great under Y"** shelf price for the current destination —
+`suggestedShelfTargets` in `@hauliday/verdict` is the inverse of the verdict (home est × FX
+snapshot × tax-free). A **watchlist detail** screen shows both home channels, the good-price
+targets, a user-set **target price + note** (M13 columns + update RLS), a log-a-price shortcut,
+and remove. **Push alerts are still pending** — they need expo-notifications + a worker that
+checks new observations against targets; the data/targets are in place for that.
+*Rejected:* storing the target as a per-trip dest-shelf price (home-currency target is
+dest-agnostic); building push now without the worker/token infra.
+2026-08

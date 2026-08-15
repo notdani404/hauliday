@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { money, type Money } from '@hauliday/money';
-import { computeVerdict, isWorthHauling, taxFreeRate } from './index.js';
+import { computeVerdict, isWorthHauling, taxFreeRate, suggestedShelfTargets } from './index.js';
 
 // Deterministic formatter so copy assertions don't depend on ICU/locale.
 const fmt = (m: Money) => `${m.currency}${m.amountMinor}`;
@@ -80,6 +80,22 @@ describe('tax-free + cross-currency (JP shelf -> SG home)', () => {
     const without = computeVerdict({ ...base, taxFreeRate: 0 });
     // Refund lowers the effective price, so savings % is higher with the refund.
     expect(withRefund.savingsPct!).toBeGreaterThan(without.savingsPct!);
+  });
+});
+
+describe('suggestedShelfTargets', () => {
+  it('gives the JP shelf prices that clear worth-it/great vs a home estimate', () => {
+    // Home S$34.90; JP tax-free 10%; 0.009 SGD/JPY.
+    // worth-it (10%): 34.90*0.9 / 0.009 / 0.9 = ¥3878 ; great (25%): ¥3231
+    const t = suggestedShelfTargets(money(3490n, 'SGD'), {
+      taxFreeRate: 0.1,
+      rate: '0.009',
+      destCurrency: 'JPY',
+    });
+    expect(t.worthIt).toEqual(money(3878n, 'JPY'));
+    expect(t.great).toEqual(money(3231n, 'JPY'));
+    // a great price is lower than a merely worth-it price
+    expect(t.great.amountMinor < t.worthIt.amountMinor).toBe(true);
   });
 });
 
