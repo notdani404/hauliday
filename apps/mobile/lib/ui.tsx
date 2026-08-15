@@ -49,6 +49,9 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: !!disabled }}
       style={[
         styles.btn,
         isGhost && styles.btnGhost,

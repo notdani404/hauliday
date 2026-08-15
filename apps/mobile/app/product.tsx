@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useCapture } from '../lib/capture';
 import type { Estimate } from '../lib/catalog';
-import { Button, Card, confidenceLabel, moneyText } from '../lib/ui';
+import { useWatch } from '../lib/useWatch';
+import { Button, Card, WatchHeart, confidenceLabel, moneyText } from '../lib/ui';
 import { theme } from '../lib/theme';
 
 function daysAgo(dateISO: string | null): string {
@@ -44,6 +45,7 @@ function EstimateCard({ label, est }: { label: string; est: Estimate | null }) {
 
 export default function Product() {
   const { session } = useCapture();
+  const { ids, toggle } = useWatch();
 
   // Guard: no active scan -> back to main.
   useEffect(() => {
@@ -76,13 +78,16 @@ export default function Product() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 16 }}>
-        <View>
-          <Text style={styles.brand}>{v.brand}</Text>
-          <Text style={styles.name}>{v.productName}</Text>
-          <Text style={styles.size}>
-            {v.sizeValue ? `${v.sizeValue}${v.sizeUnit ?? ''} · ` : ''}
-            {v.market} market
-          </Text>
+        <View style={styles.headerRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.brand}>{v.brand}</Text>
+            <Text style={styles.name}>{v.productName}</Text>
+            <Text style={styles.size}>
+              {v.sizeValue ? `${v.sizeValue}${v.sizeUnit ?? ''} · ` : ''}
+              {v.market} market
+            </Text>
+          </View>
+          <WatchHeart active={ids.has(v.variantId)} onPress={() => void toggle(v.variantId)} />
         </View>
 
         {!soldAtHome ? (
@@ -110,6 +115,7 @@ export default function Product() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 24, paddingTop: 12 },
+  headerRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   brand: { fontSize: 13, color: theme.coral, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   name: { fontSize: 22, fontWeight: '800', color: theme.ink, marginTop: 2 },
   size: { fontSize: 13, color: theme.slate, marginTop: 4 },

@@ -8,6 +8,7 @@ import { useCapture } from '../lib/capture';
 import { useTrip } from '../lib/trip';
 import { taxFreeRate } from '../lib/markets';
 import { FX_SNAPSHOT } from '../lib/fxSnapshot';
+import { useWatch } from '../lib/useWatch';
 import { Button } from '../lib/ui';
 import { theme } from '../lib/theme';
 
@@ -22,6 +23,7 @@ const VERDICT_BG: Record<VerdictState, string> = {
 export default function Result() {
   const { session } = useCapture();
   const { dest } = useTrip();
+  const { ids, toggle } = useWatch();
 
   useEffect(() => {
     if (!session || !dest || session.destShelfMinor == null) router.replace('/scan');
@@ -80,6 +82,16 @@ export default function Result() {
       <View style={styles.footer}>
         <Button title="Contribute this price" onPress={() => router.push('/submit')} />
         <View style={{ height: 10 }} />
+        {session.variant && (
+          <>
+            <Button
+              title={ids.has(session.variant.variantId) ? '♥ On your watchlist' : '♡ Save to watchlist'}
+              variant="ghost"
+              onPress={() => void toggle(session.variant!.variantId)}
+            />
+            <View style={{ height: 10 }} />
+          </>
+        )}
         <Button title="Scan another" variant="ghost" onPress={() => router.replace('/scan')} />
       </View>
     </SafeAreaView>
