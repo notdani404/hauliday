@@ -316,3 +316,23 @@ error and no session — which stranded users on the landing. Reverted to plain 
 (reliable for new + returning), and the landing waits through the callback. Merging anon→Google
 needs callback-error handling and is a follow-up.
 2026-08
+
+**D-033 · anon→Google merge wired with a callback-error fallback (supersedes D-030)**
+`startGoogleFlow` now attempts `linkIdentity` when the current user is anonymous, so a first-time
+Google sign-in keeps that user's scans/watchlist/trust. Arms a `hauliday.oauth.link-retry`
+localStorage flag before redirecting. On return, `handleOAuthReturn` (called from the landing):
+if a session exists and is non-anonymous → clear the flag, proceed; if the callback URL has an
+`error` and the flag is armed (link failed because the Google account is already permanent) →
+consume the flag (so it can't loop) and complete a plain `signInWithOAuth` instead. Returning
+users thus sign in on the second hop; brand-new Google users link in place on the first. This is
+the follow-up D-030 called for; plain-OAuth-only is no longer the behaviour.
+2026-08
+
+**D-034 · Seeded multi-store SG prices so local comparison feels real**
+Each of the 10 loaded SKUs had a single SG retailer, so the per-store comparison (D-031) showed
+one row. Added SG in-store observations across Watsons / Guardian / NTUC FairPrice / Don Don Donki
+(and Sephora for Anessa) — 32 new rows — via a one-off, idempotent insert (skip if a row for that
+variant+retailer+in_store already exists; never re-runs the non-idempotent CSV loader; ledger
+stays append-only). Don Don Donki (the JP-goods discount chain) lands cheapest, which is both
+realistic and on-narrative. Script lives in scratchpad, not the repo.
+2026-08

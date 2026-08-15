@@ -36,21 +36,58 @@ export function useAuthUser(): AuthState {
   };
 }
 
-/**
- * Start a Google OAuth flow and return its redirect URL. Plain sign-in — reliable
- * for both new and returning accounts. (We tried linkIdentity to merge an
- * anonymous user's contributions, but when the Google account is already a
- * permanent user the link fails at the callback and bounces the user back with an
- * error instead of a session. Merging anon→Google needs return-error handling and
- * is a follow-up.) skipBrowserRedirect lets the caller control the redirect.
- */
-async function startGoogleFlow(redirectTo: string): Promise<string> {
+const LINK_RETRY_KEY = 'hauliday.oauth.link-retry';
+
+async function plainOAuthUrl(redirectTo: string): Promise<string> {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo, skipBrowserRedirect: true },
   });
   if (error || !data?.url) throw error ?? new Error('No OAuth URL returned');
   return data.url;
+}
+
+/**
+ * Start a Google flow and return its redirect URL. If the user is anonymous we
+ * LINK Google to that same user so their scans/watchlist/trust carry over. If the
+ * Google account is already a permanent user the link fails *at the callback*
+ * (not here) — handleOAuthReturn() catches that and retries as a plain sign-in.
+ */
+async function startGoogleFlow(redirectTo: string): Promise<string> {
+  const { data: sess } = await supabase.auth.getSession();
+  const isAnonymous = sess.session?.user?.is_anonymous ?? false;
+  if (isAnonymous) {
+    const linked = await supabase.auth.linkIdentity({
+      provider: 'google',
+      options: { redirectTo, skipBrowserRedirect: true },
+    });
+    if (!linked.error && linked.data?.url) {
+      if (typeof window !== 'undefined') window.localStorage.setItem(LINK_RETRY_KEY, '1'); // arm fallback
+      return linked.data.url;
+    }
+  }
+  return plainOAuthUrl(redirectTo);
+}
+
+/**
+ * Call on web app load. If a link attempt failed at the callback (error in the
+ * URL, no session) but we armed a retry, complete a plain sign-in instead (once).
+ * Returns 'redirecting' if it kicked off a fallback redirect.
+ */
+export async function handleOAuthReturn(): Promise<'redirecting' | 'ok' | 'none'> {
+  if (Platform.OS !== 'web') return 'none';
+  const { data } = await supabase.auth.getSession();
+  if (data.session && !data.session.user.is_anonymous) {
+    window.localStorage.removeItem(LINK_RETRY_KEY);
+    return 'ok';
+  }
+  const url = window.location.search + window.location.hash;
+  if (/[?#&]error=/.test(url) && window.localStorage.getItem(LINK_RETRY_KEY)) {
+    window.localStorage.removeItem(LINK_RETRY_KEY); // consume — don't loop
+    window.location.href = await plainOAuthUrl(window.location.origin);
+    return 'redirecting';
+  }
+  return 'none';
 }
 
 /**

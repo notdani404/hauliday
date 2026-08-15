@@ -3,7 +3,7 @@ import { Text, View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTrip } from '../lib/trip';
-import { useAuthUser, signInWithGoogle } from '../lib/auth';
+import { useAuthUser, signInWithGoogle, handleOAuthReturn } from '../lib/auth';
 import { getProfile } from '../lib/profile';
 import { Button } from '../lib/ui';
 import { theme } from '../lib/theme';
@@ -35,8 +35,16 @@ export default function Welcome() {
       return;
     }
     const url = typeof window !== 'undefined' ? window.location.search + window.location.hash : '';
-    const pendingOAuth = /[?#&](code|access_token|error)=/.test(url);
-    if (!pendingOAuth) setDeciding(false); // anonymous / no session → show the landing
+    if (/[?#&]error=/.test(url)) {
+      // The callback errored. If it was a failed anon→Google link attempt we armed
+      // a retry — complete a plain sign-in instead; otherwise fall back to landing.
+      handleOAuthReturn().then((res) => {
+        if (res !== 'redirecting') setDeciding(false);
+      });
+      return;
+    }
+    if (/[?#&](code|access_token)=/.test(url)) return; // successful callback still resolving → hold splash
+    setDeciding(false); // anonymous / no session → show the landing
   }, [loading, hydrated, user, isAnonymous]);
 
   if (deciding) {
