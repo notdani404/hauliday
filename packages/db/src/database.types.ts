@@ -496,6 +496,39 @@ export type Database = {
           },
         ]
       }
+      watchlist: {
+        Row: {
+          created_at: string
+          user_id: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "price_estimate_mv"
+            referencedColumns: ["variant_id"]
+          },
+          {
+            foreignKeyName: "watchlist_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       price_estimate_mv: {
@@ -514,6 +547,13 @@ export type Database = {
       }
     }
     Functions: {
+      catalogue_categories: {
+        Args: never
+        Returns: {
+          category: string
+          item_count: number
+        }[]
+      }
       find_or_create_store: {
         Args: { p_area?: string; p_name: string; p_retailer_id: string }
         Returns: string
@@ -534,14 +574,16 @@ export type Database = {
       }
       refresh_price_estimates: { Args: never; Returns: undefined }
       search_catalogue: {
-        Args: { p_country?: string; p_query: string }
+        Args: { p_category?: string; p_country?: string; p_query: string }
         Returns: {
           brand: string
           canonical_name: string
+          category: string
           est_amount_minor: number
           est_confidence: number
           est_count: number
           est_currency: string
+          form: string
           gtin: string
           market: string
           product_name: string

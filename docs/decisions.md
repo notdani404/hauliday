@@ -233,3 +233,14 @@ Branding: brand SVGs (in ~/Codebases/Personal/Logos/Hauliday) applied as app ico
 splash + welcome lockup + a compact BrandMark on Scan/Search; web OG via a post-build head
 inject (Expo output:"single" ignores +html.tsx).
 2026-08
+
+**D-025 · Catalogue browse + watchlist**
+The Catalogue tab (was Search) lands on **category tiles** (`catalogue_categories` RPC) with
+the search bar still present; a **category page** lists items with a **brand ⇄ product-type**
+grouping toggle (`search_catalogue` gained a category filter + returns category/form). Each row
+has a **watchlist heart**. `watchlist` table (M12) is owner-only; anonymous users can save
+(they have a uid) and it carries over when they link Google. The Watchlist tab shows a basic
+saved-items list now; **pre-trip price alerts + targets are the fast-follow**.
+*Rejected:* a separate 6th Catalogue tab (crowded — folded into Search); inline estimate on
+every watchlist row (deferred with the alerts build).
+2026-08

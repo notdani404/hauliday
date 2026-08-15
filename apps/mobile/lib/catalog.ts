@@ -52,17 +52,27 @@ export async function resolveBarcode(gtin: string): Promise<ResolvedVariant | nu
 export interface SearchResult {
   variant: ResolvedVariant;
   gtin: string | null;
+  category: string | null;
+  form: string | null;
   /** Home in-store estimate shown inline in results (null if none). */
   homePrice: Money | null;
   confidence: number;
   observationCount: number;
 }
 
-/** Case-insensitive catalogue search via the search_catalogue RPC. Empty query browses. */
-export async function searchVariants(query: string, country = 'SG'): Promise<SearchResult[]> {
+/**
+ * Catalogue search via the search_catalogue RPC. Empty query browses; an optional
+ * category filters to that category (for the category page).
+ */
+export async function searchVariants(
+  query: string,
+  country = 'SG',
+  category?: string,
+): Promise<SearchResult[]> {
   const { data, error } = await supabase.rpc('search_catalogue', {
     p_query: query,
     p_country: country,
+    p_category: category ?? undefined,
   });
   if (error) {
     console.warn('[catalog] searchVariants:', error.message);
@@ -73,6 +83,8 @@ export async function searchVariants(query: string, country = 'SG'): Promise<Sea
     brand: string;
     product_name: string;
     canonical_name: string;
+    category: string | null;
+    form: string | null;
     market: string;
     size_value: number | null;
     size_unit: string | null;
@@ -93,12 +105,32 @@ export async function searchVariants(query: string, country = 'SG'): Promise<Sea
       sizeUnit: r.size_unit,
     },
     gtin: r.gtin,
+    category: r.category,
+    form: r.form,
     homePrice:
       r.est_amount_minor != null && r.est_currency != null && isCurrencyCode(r.est_currency)
         ? money(BigInt(r.est_amount_minor), r.est_currency)
         : null,
     confidence: Number(r.est_confidence ?? 0),
     observationCount: r.est_count ?? 0,
+  }));
+}
+
+export interface CategoryTile {
+  category: string;
+  itemCount: number;
+}
+
+/** Categories with counts, for the catalogue landing. */
+export async function listCategories(): Promise<CategoryTile[]> {
+  const { data, error } = await supabase.rpc('catalogue_categories');
+  if (error) {
+    console.warn('[catalog] listCategories:', error.message);
+    return [];
+  }
+  return ((data ?? []) as Array<{ category: string; item_count: number }>).map((r) => ({
+    category: r.category,
+    itemCount: r.item_count,
   }));
 }
 
@@ -176,6 +208,68 @@ export async function listRetailers(country: string): Promise<RetailerOption[]> 
     id: r.id,
     name: r.name,
     defaultChannel: r.default_channel as Channel,
+  }));
+}
+
+// --- Watchlist ---------------------------------------------------------------
+
+async function currentUid(): Promise<string | null> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.user?.id ?? null;
+}
+
+/** Variant ids the current user has saved. */
+export async function getWatchlistIds(): Promise<Set<string>> {
+  const { data, error } = await supabase.from('watchlist').select('variant_id');
+  if (error) return new Set();
+  return new Set((data ?? []).map((r) => r.variant_id as string));
+}
+
+export async function addWatch(variantId: string): Promise<void> {
+  const uid = await currentUid();
+  if (!uid) return;
+  await supabase.from('watchlist').insert({ user_id: uid, variant_id: variantId });
+}
+
+export async function removeWatch(variantId: string): Promise<void> {
+  const uid = await currentUid();
+  if (!uid) return;
+  await supabase.from('watchlist').delete().eq('user_id', uid).eq('variant_id', variantId);
+}
+
+export interface WatchItem {
+  variant: ResolvedVariant;
+}
+
+/** The user's saved variants with product details, newest first. */
+export async function getWatchlist(): Promise<WatchItem[]> {
+  const { data, error } = await supabase
+    .from('watchlist')
+    .select(
+      'variant_id, created_at, product_variant!inner(id, market, size_value, size_unit, canonical_name, product!inner(brand, name))',
+    )
+    .order('created_at', { ascending: false });
+  if (error || !data) return [];
+  const rows = data as unknown as Array<{
+    product_variant: {
+      id: string;
+      market: string;
+      size_value: number | null;
+      size_unit: string | null;
+      canonical_name: string;
+      product: { brand: string; name: string };
+    };
+  }>;
+  return rows.map((r) => ({
+    variant: {
+      variantId: r.product_variant.id,
+      brand: r.product_variant.product.brand,
+      productName: r.product_variant.product.name,
+      canonicalName: r.product_variant.canonical_name,
+      market: r.product_variant.market,
+      sizeValue: r.product_variant.size_value,
+      sizeUnit: r.product_variant.size_unit,
+    },
   }));
 }
 

@@ -64,6 +64,22 @@ export function Card({ children, style }: { children: ReactNode; style?: ViewSty
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
+/** Watchlist toggle heart (controlled). */
+export function WatchHeart({ active, onPress }: { active: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={12}
+      accessibilityRole="button"
+      accessibilityLabel={active ? 'Remove from watchlist' : 'Add to watchlist'}
+    >
+      <Text style={{ fontSize: 22, color: active ? theme.coral : theme.slate }}>
+        {active ? '♥' : '♡'}
+      </Text>
+    </Pressable>
+  );
+}
+
 /** Confidence level label from the 0..1 score. Never show a bare number (#4). */
 export function confidenceLabel(score: number): 'high' | 'medium' | 'low' {
   if (score >= 0.75) return 'high';

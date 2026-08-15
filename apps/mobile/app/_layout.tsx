@@ -45,6 +45,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="home-country" options={flowHeader('Home market')} />
                 <Stack.Screen name="dest-country" options={flowHeader('Destination')} />
+                <Stack.Screen name="category/[category]" options={flowHeader('Category')} />
                 <Stack.Screen name="product" options={flowHeader('Product')} />
                 <Stack.Screen name="price" options={flowHeader('Enter price')} />
                 <Stack.Screen name="result" options={flowHeader('Verdict')} />
