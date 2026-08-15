@@ -1,14 +1,42 @@
-import { Text, View, Image, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Text, View, Image, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTrip } from '../lib/trip';
+import { useAuthUser, signInWithGoogle } from '../lib/auth';
+import { getProfile } from '../lib/profile';
 import { Button } from '../lib/ui';
 import { theme } from '../lib/theme';
 
 export default function Welcome() {
   const { dest, hydrated } = useTrip();
+  const { user, isAnonymous, loading } = useAuthUser();
+  const [deciding, setDeciding] = useState(true);
+  const [busy, setBusy] = useState(false);
 
-  const start = () => router.push(dest ? '/scan' : '/home-country');
+  const enterApp = () => router.replace(dest ? '/(tabs)/scan' : '/dest-country');
+
+  // Returning signed-in users skip the landing: straight in if they have a
+  // profile, into onboarding if they're new.
+  useEffect(() => {
+    if (loading || !hydrated) return;
+    if (user && !isAnonymous) {
+      getProfile(user.id).then((profile) => {
+        router.replace(profile ? (dest ? '/(tabs)/scan' : '/dest-country') : '/onboarding');
+      });
+    } else {
+      setDeciding(false); // anonymous / no session → show the landing
+    }
+  }, [loading, hydrated, user, isAnonymous]);
+
+  if (deciding) {
+    return (
+      <SafeAreaView style={[styles.screen, styles.center]}>
+        <Image source={require('../assets/logo-vertical.png')} style={styles.logo} resizeMode="contain" />
+        <ActivityIndicator color={theme.coral} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -24,8 +52,23 @@ export default function Welcome() {
           Compare prices.{'\n'}Shop smarter.{'\n'}Make every haul worth it.
         </Text>
       </View>
+
       <View style={styles.footer}>
-        <Button title="Get started" onPress={start} disabled={!hydrated} />
+        <Button
+          title={busy ? 'Opening Google…' : 'Continue with Google'}
+          onPress={async () => {
+            setBusy(true);
+            try {
+              await signInWithGoogle();
+            } catch {
+              setBusy(false);
+            }
+          }}
+          disabled={busy}
+        />
+        <View style={{ height: 10 }} />
+        <Button title="Start comparing" variant="ghost" onPress={enterApp} disabled={busy} />
+        <Text style={styles.note}>Start comparing right away — no account needed. Sign in anytime to save your list.</Text>
       </View>
     </SafeAreaView>
   );
@@ -33,9 +76,11 @@ export default function Welcome() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 24 },
+  center: { alignItems: 'center', justifyContent: 'center', gap: 20 },
   body: { flex: 1, justifyContent: 'center', gap: 10 },
   logo: { width: 200, height: 254, marginLeft: -6, marginBottom: 4 },
   tagline: { fontSize: 18, fontWeight: '700', color: theme.coral },
   sub: { fontSize: 15, lineHeight: 26, color: theme.slate, marginTop: 8 },
   footer: { paddingBottom: 24 },
+  note: { fontSize: 12, color: theme.slate, textAlign: 'center', marginTop: 12, lineHeight: 17 },
 });

@@ -43,6 +43,7 @@ export default function RootLayout() {
               >
                 <Stack.Screen name="index" />
                 <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="onboarding" />
                 <Stack.Screen name="home-country" options={flowHeader('Home market')} />
                 <Stack.Screen name="dest-country" options={flowHeader('Destination')} />
                 <Stack.Screen name="category/[category]" options={flowHeader('Category')} />

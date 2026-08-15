@@ -244,3 +244,15 @@ saved-items list now; **pre-trip price alerts + targets are the fast-follow**.
 *Rejected:* a separate 6th Catalogue tab (crowded — folded into Search); inline estimate on
 every watchlist row (deferred with the alerts build).
 2026-08
+
+**D-026 · Landing = Google-first with onboarding wizard; "Start comparing" anonymous path**
+The landing offers two routes: **primary "Continue with Google"** and **secondary "Start
+comparing"** (into the app anonymously — the core loop is never gated). After Google sign-in,
+**new users** (no `profile` row) go through an **onboarding wizard — one field per page**
+(name → birth year → gender → home market; optional steps skippable), then into the app;
+**returning users** (profile exists) skip the landing and go straight in. Home market chosen in
+onboarding sets the comparison home (D-024). Entry lands on the destination picker if no trip
+destination is set yet, else the Scan tab.
+*Rejected:* mandatory sign-in (gates the loop); one big profile form (wizard is gentler);
+gating onboarding behind email/phone verification.
+2026-08
