@@ -291,6 +291,24 @@ is computed for *that item's* destination, not just the active trip.
 item (a join table — overkill for now; re-tag if plans change).
 2026-08
 
+**D-031 · Home mode: local price checks + per-store comparison**
+An Abroad/Home toggle in the trip header. **Home** = you're shopping in your home market: the
+product screen shows a **per-retailer in-store breakdown** (Guardian vs Watsons vs FairPrice,
+cheapest first) via `retailer_prices` (M16); price entry skips FX/tax; logging feeds the same
+ledger. This builds the in-store dataset locals check *and* inbound travellers rely on (SG as
+their destination). **Abroad** = unchanged haul verdict.
+*Rejected:* home-check as contribution-only (the value is the store-to-store comparison); a
+separate "local" ledger (it's the same observations, filtered by country/channel).
+2026-08
+
+**D-032 · Bottom nav = Catalogue · Scan · Watchlist · Account; History under Account**
+Catalogue is the landing tab (where people intuitively start), Scan sits second (thumb
+hotspot). History stopped being a top-level tab — it's now a subsection reached from Account
+(and a link on the signed-out Account view, since anonymous users have a local sync queue too).
+*Rejected:* Scan-first (browsing is the more common entry); History as its own tab (low-
+frequency; belongs with the account).
+2026-08
+
 **D-030 · Google sign-in is plain OAuth (anon→merge deferred)**
 `linkIdentity` (to merge an anonymous user's contributions into their Google account) fails at
 the OAuth callback when that Google account is already a permanent user, bouncing back with an

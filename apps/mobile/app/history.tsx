@@ -3,9 +3,9 @@ import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { format, money, isCurrencyCode } from '@hauliday/money';
-import { pending, flush, type PendingObservation } from '../../lib/queue';
-import { Button } from '../../lib/ui';
-import { theme } from '../../lib/theme';
+import { pending, flush, type PendingObservation } from '../lib/queue';
+import { Button } from '../lib/ui';
+import { theme } from '../lib/theme';
 
 function fmtAmount(it: PendingObservation): string {
   return isCurrencyCode(it.currency)
@@ -17,7 +17,7 @@ function seenAgo(dateISO: string): string {
   return days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
 }
 
-export default function HistoryTab() {
+export default function History() {
   const [items, setItems] = useState<PendingObservation[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -25,11 +25,7 @@ export default function HistoryTab() {
     void pending().then(setItems);
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      reload();
-    }, [reload]),
-  );
+  useFocusEffect(useCallback(() => reload(), [reload]));
 
   async function sync() {
     setBusy(true);
@@ -42,8 +38,7 @@ export default function HistoryTab() {
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-      <Text style={styles.title}>Your contributions</Text>
+    <SafeAreaView style={styles.screen} edges={['bottom', 'left', 'right']}>
       <Text style={styles.sub}>
         {items.length === 0
           ? 'Everything is synced. Prices you share sync automatically when you have signal.'
@@ -75,8 +70,7 @@ export default function HistoryTab() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 24, paddingTop: 12 },
-  title: { fontSize: 24, fontWeight: '800', color: theme.ink, marginTop: 8 },
-  sub: { fontSize: 14, color: theme.slate, marginTop: 6, marginBottom: 14 },
+  sub: { fontSize: 14, color: theme.slate, marginBottom: 14 },
   list: { flex: 1 },
   row: {
     flexDirection: 'row',

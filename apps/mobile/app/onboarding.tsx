@@ -49,7 +49,7 @@ export default function Onboarding() {
       await saveProfile(user!.id, form);
       const m = marketByCode(form.country);
       if (m) setHome(m);
-      router.replace(dest ? '/(tabs)/scan' : '/dest-country');
+      router.replace(dest ? '/(tabs)/search' : '/dest-country');
     } catch {
       setBusy(false);
     }

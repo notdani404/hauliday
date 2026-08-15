@@ -12,6 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useAuthUser, signInWithGoogle, signOut } from '../../lib/auth';
 import {
   getProfile,
@@ -79,6 +80,9 @@ export default function ProfileTab() {
             onPress={() => void google()}
             disabled={busy}
           />
+          <Pressable onPress={() => router.push('/history')} hitSlop={8} style={styles.historyLink}>
+            <Text style={styles.historyLinkText}>View your contributions</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
@@ -218,6 +222,11 @@ function ProfileEditor({
             ))}
           </View>
 
+          <Pressable style={styles.navRow} onPress={() => router.push('/history')}>
+            <Text style={styles.navRowText}>🧾 Your contributions</Text>
+            <Text style={styles.navChev}>›</Text>
+          </Pressable>
+
           <View style={styles.actions}>
             <Button title={saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save profile'} onPress={() => void save()} disabled={saving} />
             <View style={{ height: 10 }} />
@@ -297,4 +306,20 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: '600', color: theme.slate },
   chipTextSel: { color: theme.coral },
   actions: { marginTop: 24 },
+  navRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.white,
+    borderWidth: 1,
+    borderColor: theme.line,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 20,
+  },
+  navRowText: { fontSize: 15, fontWeight: '600', color: theme.ink },
+  navChev: { fontSize: 20, color: theme.slate },
+  historyLink: { alignItems: 'center', paddingVertical: 14 },
+  historyLinkText: { fontSize: 13, color: theme.coral, fontWeight: '700' },
 });
+

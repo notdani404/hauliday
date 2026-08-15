@@ -14,7 +14,7 @@ export default function Welcome() {
   const [deciding, setDeciding] = useState(true);
   const [busy, setBusy] = useState(false);
 
-  const enterApp = () => router.replace(dest ? '/(tabs)/scan' : '/dest-country');
+  const enterApp = () => router.replace(dest ? '/(tabs)/search' : '/dest-country');
 
   // Safety: never hang on the splash (e.g. an OAuth callback that errored).
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function Welcome() {
     if (loading || !hydrated) return;
     if (user && !isAnonymous) {
       getProfile(user.id).then((profile) => {
-        router.replace(profile ? (dest ? '/(tabs)/scan' : '/dest-country') : '/onboarding');
+        router.replace(profile ? (dest ? '/(tabs)/search' : '/dest-country') : '/onboarding');
       });
       return;
     }
