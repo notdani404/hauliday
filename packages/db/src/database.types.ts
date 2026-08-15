@@ -567,6 +567,17 @@ export type Database = {
         Args: { p_area?: string; p_name: string; p_retailer_id: string }
         Returns: string
       }
+      find_or_create_store_by_place: {
+        Args: {
+          p_address?: string
+          p_lat?: number
+          p_lng?: number
+          p_name: string
+          p_place_id: string
+          p_retailer_id: string
+        }
+        Returns: string
+      }
       price_estimate: {
         Args: {
           p_channel: Database["public"]["Enums"]["channel"]

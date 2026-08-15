@@ -15,7 +15,12 @@ export interface PendingObservation {
   observedOn: string; // YYYY-MM-DD, local shelf date
   createdAt: string; // ISO
   storeName?: string; // in-store: specific branch, resolved to a store at sync time
-  storeArea?: string; // in-store: neighbourhood
+  storeArea?: string; // in-store: neighbourhood (free-text fallback)
+  placeId?: string; // in-store: Google place id (preferred; resolves with coords)
+  placeName?: string;
+  placeAddress?: string;
+  placeLat?: number;
+  placeLng?: number;
 }
 
 async function readQueue(): Promise<PendingObservation[]> {
@@ -58,7 +63,23 @@ export async function flush(): Promise<{ synced: number; remaining: number }> {
     // Resolve the specific store at sync time (offline-first: the name was
     // captured locally; the store row is created/looked up when back online).
     let storeId: string | null = null;
-    if (it.channel === 'in_store' && it.storeName) {
+    if (it.channel === 'in_store' && it.placeId) {
+      // Preferred: exact Google Place → store with coords.
+      const { data, error: pErr } = await supabase.rpc('find_or_create_store_by_place', {
+        p_retailer_id: it.retailerId,
+        p_place_id: it.placeId,
+        p_name: it.placeName ?? it.storeName ?? '',
+        p_address: it.placeAddress ?? undefined,
+        p_lat: it.placeLat ?? undefined,
+        p_lng: it.placeLng ?? undefined,
+      });
+      if (pErr) {
+        stillPending.push(it);
+        continue;
+      }
+      storeId = (data as string | null) ?? null;
+    } else if (it.channel === 'in_store' && it.storeName) {
+      // Fallback: free-text branch + area.
       const { data, error: sErr } = await supabase.rpc('find_or_create_store', {
         p_retailer_id: it.retailerId,
         p_name: it.storeName,

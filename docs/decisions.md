@@ -268,3 +268,16 @@ checks new observations against targets; the data/targets are in place for that.
 *Rejected:* storing the target as a per-trip dest-shelf price (home-currency target is
 dest-agnostic); building push now without the worker/token infra.
 2026-08
+
+**D-028 · Google Places (New) store autocomplete, client-side, referrer-restricted key**
+Submit's store picker uses **Places API (New)** (`places.googleapis.com`) called directly from
+the client — it's CORS-enabled (the classic web service isn't) and works with an HTTP-referrer-
+restricted web key (`EXPO_PUBLIC_GOOGLE_MAPS_KEY`, restricted to hauliday.app). Picking a place
+resolves to a store via `find_or_create_store_by_place` (M14, dedups on `google_place_id`,
+stores address + lat/lng) — the coords foundation for "prices near you". Free-text branch/area
+stays as the fallback (and when no key); store still resolves at SYNC time (offline-safe).
+**Caveat:** a referrer key only works on hauliday.app — native (EAS) and preview URLs need a
+separate key (Android/iOS restriction) or a proxy. Also add the key to Vercel env for the live build.
+*Rejected:* classic Places web service (no browser CORS); Maps JS SDK (web-only, no native);
+proxying through a worker now (unneeded for web).
+2026-08

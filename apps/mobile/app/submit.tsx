@@ -15,6 +15,7 @@ import { useCapture } from '../lib/capture';
 import { useTrip } from '../lib/trip';
 import { listRetailers, type RetailerOption, type Channel } from '../lib/catalog';
 import { captureObservation } from '../lib/observations';
+import { placesEnabled, placesAutocomplete, placeDetails, type PlaceSuggestion, type PlaceDetail } from '../lib/places';
 import { Button } from '../lib/ui';
 import { theme } from '../lib/theme';
 
@@ -27,6 +28,10 @@ export default function Submit() {
   const [channel, setChannel] = useState<Channel>('in_store');
   const [storeName, setStoreName] = useState('');
   const [storeArea, setStoreArea] = useState('');
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [place, setPlace] = useState<PlaceDetail | null>(null);
+  const [manual, setManual] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -39,10 +44,38 @@ export default function Submit() {
       .finally(() => setLoading(false));
   }, []);
 
+  const usePlaces = placesEnabled() && !manual;
+
+  useEffect(() => {
+    if (channel !== 'in_store' || !usePlaces || place) {
+      setSuggestions([]);
+      return;
+    }
+    const q = query.trim();
+    if (q.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const t = setTimeout(() => {
+      void placesAutocomplete(q, dest?.code).then(setSuggestions);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [query, channel, usePlaces, place]);
+
   if (!session?.variant || !dest || session.destShelfMinor == null) return null;
+
+  async function pick(placeId: string) {
+    const detail = await placeDetails(placeId);
+    if (detail) {
+      setPlace(detail);
+      setQuery('');
+      setSuggestions([]);
+    }
+  }
 
   async function submit() {
     if (!retailerId || !session?.variant || session.destShelfMinor == null || !dest) return;
+    const inStore = channel === 'in_store';
     setBusy(true);
     try {
       const res = await captureObservation({
@@ -52,8 +85,18 @@ export default function Submit() {
         amountMinor: Number(session.destShelfMinor),
         currency: dest.currency,
         taxInclusive: true,
-        storeName: channel === 'in_store' ? storeName.trim() || undefined : undefined,
-        storeArea: channel === 'in_store' ? storeArea.trim() || undefined : undefined,
+        ...(inStore && place
+          ? {
+              placeId: place.placeId,
+              placeName: place.name,
+              placeAddress: place.address ?? undefined,
+              placeLat: place.lat ?? undefined,
+              placeLng: place.lng ?? undefined,
+            }
+          : {}),
+        ...(inStore && !place
+          ? { storeName: storeName.trim() || undefined, storeArea: storeArea.trim() || undefined }
+          : {}),
       });
       clear();
       router.replace({
@@ -73,11 +116,7 @@ export default function Submit() {
 
         <View style={styles.channelRow}>
           {(['in_store', 'online'] as Channel[]).map((c) => (
-            <Pressable
-              key={c}
-              style={[styles.chip, channel === c && styles.chipSel]}
-              onPress={() => setChannel(c)}
-            >
+            <Pressable key={c} style={[styles.chip, channel === c && styles.chipSel]} onPress={() => setChannel(c)}>
               <Text style={[styles.chipText, channel === c && styles.chipTextSel]}>
                 {c === 'in_store' ? 'In-store' : 'Online'}
               </Text>
@@ -85,25 +124,15 @@ export default function Submit() {
           ))}
         </View>
 
-        <ScrollView
-          style={styles.list}
-          contentContainerStyle={{ gap: 10, paddingBottom: 8 }}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView style={styles.list} contentContainerStyle={{ gap: 10, paddingBottom: 8 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.label}>Retailer</Text>
           {loading ? (
             <Text style={styles.note}>Loading stores…</Text>
           ) : retailers.length === 0 ? (
-            <Text style={styles.note}>
-              No {dest.name} retailers yet. As prices come in, you'll pick one here.
-            </Text>
+            <Text style={styles.note}>No {dest.name} retailers yet. As prices come in, you'll pick one here.</Text>
           ) : (
             retailers.map((r) => (
-              <Pressable
-                key={r.id}
-                style={[styles.row, retailerId === r.id && styles.rowSel]}
-                onPress={() => setRetailerId(r.id)}
-              >
+              <Pressable key={r.id} style={[styles.row, retailerId === r.id && styles.rowSel]} onPress={() => setRetailerId(r.id)}>
                 <Text style={styles.rowName}>{r.name}</Text>
                 {retailerId === r.id && <Text style={styles.tick}>✓</Text>}
               </Pressable>
@@ -112,32 +141,55 @@ export default function Submit() {
 
           {channel === 'in_store' && (
             <View style={styles.storeBlock}>
-              <Text style={styles.label}>Which branch? (optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={storeName}
-                onChangeText={setStoreName}
-                placeholder="e.g. Matsukiyo Shibuya"
-                placeholderTextColor={theme.slate}
-              />
-              <TextInput
-                style={styles.input}
-                value={storeArea}
-                onChangeText={setStoreArea}
-                placeholder="Area / neighbourhood (e.g. Shibuya)"
-                placeholderTextColor={theme.slate}
-              />
-              <Text style={styles.hint}>Naming the exact store makes the price more useful. Maps search coming soon.</Text>
+              <Text style={styles.label}>Which store?</Text>
+
+              {place ? (
+                <View style={styles.placeCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.placeName}>{place.name}</Text>
+                    {place.address ? <Text style={styles.placeAddr}>{place.address}</Text> : null}
+                  </View>
+                  <Pressable onPress={() => setPlace(null)} hitSlop={8}>
+                    <Text style={styles.link}>Change</Text>
+                  </Pressable>
+                </View>
+              ) : usePlaces ? (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    value={query}
+                    onChangeText={setQuery}
+                    placeholder={`Search a store in ${dest.name}…`}
+                    placeholderTextColor={theme.slate}
+                  />
+                  {suggestions.map((s) => (
+                    <Pressable key={s.placeId} style={styles.sugRow} onPress={() => void pick(s.placeId)}>
+                      <Text style={styles.sugName}>{s.primary}</Text>
+                      {!!s.secondary && <Text style={styles.sugAddr}>{s.secondary}</Text>}
+                    </Pressable>
+                  ))}
+                  <Pressable onPress={() => setManual(true)} hitSlop={8}>
+                    <Text style={styles.link}>Can't find it? Enter manually</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <TextInput style={styles.input} value={storeName} onChangeText={setStoreName} placeholder="e.g. Matsukiyo Shibuya" placeholderTextColor={theme.slate} />
+                  <TextInput style={styles.input} value={storeArea} onChangeText={setStoreArea} placeholder="Area / neighbourhood" placeholderTextColor={theme.slate} />
+                  {placesEnabled() && (
+                    <Pressable onPress={() => setManual(false)} hitSlop={8}>
+                      <Text style={styles.link}>Search Maps instead</Text>
+                    </Pressable>
+                  )}
+                </>
+              )}
+              <Text style={styles.hint}>Naming the exact store makes the price more useful — and powers "prices near you" later.</Text>
             </View>
           )}
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button
-            title={busy ? 'Saving…' : 'Share this price'}
-            onPress={() => void submit()}
-            disabled={!retailerId || busy}
-          />
+          <Button title={busy ? 'Saving…' : 'Share this price'} onPress={() => void submit()} disabled={!retailerId || busy} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -157,29 +209,19 @@ const styles = StyleSheet.create({
   list: { flex: 1 },
   label: { fontSize: 12, fontWeight: '700', color: theme.slate, textTransform: 'uppercase', letterSpacing: 0.5 },
   note: { fontSize: 14, color: theme.slate, lineHeight: 21, paddingVertical: 8 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.white,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: 12,
-    padding: 14,
-  },
+  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.white, borderWidth: 1, borderColor: theme.line, borderRadius: 12, padding: 14 },
   rowSel: { borderColor: theme.coral },
   rowName: { fontSize: 15, fontWeight: '600', color: theme.ink },
   tick: { marginLeft: 'auto', color: theme.green, fontWeight: '800' },
   storeBlock: { gap: 8, marginTop: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: 11,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 15,
-    backgroundColor: theme.white,
-    color: theme.ink,
-  },
+  input: { borderWidth: 1, borderColor: theme.line, borderRadius: 11, paddingHorizontal: 12, paddingVertical: 12, fontSize: 15, backgroundColor: theme.white, color: theme.ink },
+  sugRow: { backgroundColor: theme.white, borderWidth: 1, borderColor: theme.line, borderRadius: 11, padding: 12 },
+  sugName: { fontSize: 14, fontWeight: '600', color: theme.ink },
+  sugAddr: { fontSize: 12, color: theme.slate, marginTop: 2 },
+  placeCard: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FDECEE', borderWidth: 1, borderColor: theme.coral, borderRadius: 12, padding: 12 },
+  placeName: { fontSize: 15, fontWeight: '700', color: theme.ink },
+  placeAddr: { fontSize: 12, color: theme.slate, marginTop: 2 },
+  link: { fontSize: 13, color: theme.coral, fontWeight: '700' },
   hint: { fontSize: 11, color: theme.slate },
   footer: { paddingBottom: 16, paddingTop: 8 },
 });

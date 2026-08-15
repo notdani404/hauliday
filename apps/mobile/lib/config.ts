@@ -17,4 +17,6 @@ export const config = {
   supabaseAnonKey,
   /** Home market for the JP->SG wedge. */
   homeMarket: 'SG' as const,
+  /** Google Maps Platform key (Places). Optional — store search degrades to free text if absent. */
+  googleMapsKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ?? null,
 } as const;

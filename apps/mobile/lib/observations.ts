@@ -15,6 +15,11 @@ export interface ObservationInput {
   taxInclusive: boolean;
   storeName?: string;
   storeArea?: string;
+  placeId?: string;
+  placeName?: string;
+  placeAddress?: string;
+  placeLat?: number;
+  placeLng?: number;
 }
 
 /**
