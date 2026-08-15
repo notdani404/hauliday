@@ -60,13 +60,17 @@ export default function ProfileTab() {
   if (!signedIn) {
     return (
       <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
-        <Text style={styles.title}>Account</Text>
-        <View style={styles.card}>
-          <Text style={styles.emoji}>👤</Text>
-          <Text style={styles.state}>Signed in anonymously</Text>
-          <Text style={styles.sub}>
-            Your scans and contributions work right away. Sign in to keep them across devices and
-            build your contributor trust.
+        <View style={styles.landingBody}>
+          <Image
+            source={require('../../assets/logo-vertical.png')}
+            style={styles.landingLogo}
+            resizeMode="contain"
+            accessibilityLabel="Hauliday"
+          />
+          <Text style={styles.landingTagline}>Know before you haul.</Text>
+          <Text style={styles.landingSub}>
+            You're browsing anonymously. Sign in to save your watchlist and contributions across
+            devices, and build your contributor trust.
           </Text>
         </View>
         <View style={styles.footer}>
@@ -262,6 +266,10 @@ const styles = StyleSheet.create({
   state: { fontSize: 16, fontWeight: '800', color: theme.ink },
   sub: { fontSize: 13, color: theme.slate, textAlign: 'center', lineHeight: 20 },
   footer: { flex: 1, justifyContent: 'flex-end', paddingBottom: 24 },
+  landingBody: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 },
+  landingLogo: { width: 200, height: 254, marginBottom: 4 },
+  landingTagline: { fontSize: 18, fontWeight: '700', color: theme.coral, textAlign: 'center' },
+  landingSub: { fontSize: 14, lineHeight: 21, color: theme.slate, textAlign: 'center', marginTop: 4 },
   header: { flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 },
   avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: theme.line },
   avatarFallback: { alignItems: 'center', justifyContent: 'center' },
