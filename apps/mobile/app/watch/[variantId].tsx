@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Text, View, TextInput, StyleSheet, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { Text, View, TextInput, Pressable, StyleSheet, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { fromDecimal, format, type Money } from '@hauliday/money';
 import { suggestedShelfTargets } from '@hauliday/verdict';
 import { useTrip } from '../../lib/trip';
-import { taxFreeRate } from '../../lib/markets';
+import { taxFreeRate, marketByCode, DESTINATIONS } from '../../lib/markets';
 import { FX_SNAPSHOT } from '../../lib/fxSnapshot';
 import {
   getWatchlist,
   getHomeEstimates,
   setWatchlistTarget,
+  setWatchlistCountry,
   removeWatch,
   type WatchItem,
   type HomeEstimates,
@@ -27,6 +28,7 @@ export default function WatchDetail() {
   const [estimates, setEstimates] = useState<HomeEstimates | null>(null);
   const [targetText, setTargetText] = useState('');
   const [note, setNote] = useState('');
+  const [itemDest, setItemDest] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -39,6 +41,7 @@ export default function WatchDetail() {
       if (found) {
         setTargetText(found.target ? targetToText(found.target) : '');
         setNote(found.note ?? '');
+        setItemDest(found.destCountry);
         setEstimates(await getHomeEstimates(variantId, home.code));
       }
       setLoading(false);
@@ -61,14 +64,20 @@ export default function WatchDetail() {
     );
   }
 
+  const tripMarket = itemDest ? marketByCode(itemDest) ?? null : dest;
   const targets =
-    item.homePrice && dest && FX_SNAPSHOT.perUnitSGD[dest.currency]
+    item.homePrice && tripMarket && FX_SNAPSHOT.perUnitSGD[tripMarket.currency]
       ? suggestedShelfTargets(item.homePrice, {
-          taxFreeRate: taxFreeRate(dest.code),
-          rate: FX_SNAPSHOT.perUnitSGD[dest.currency]!,
-          destCurrency: dest.currency,
+          taxFreeRate: taxFreeRate(tripMarket.code),
+          rate: FX_SNAPSHOT.perUnitSGD[tripMarket.currency]!,
+          destCurrency: tripMarket.currency,
         })
       : null;
+
+  function chooseTrip(code: string | null) {
+    setItemDest(code);
+    void setWatchlistCountry(variantId, code);
+  }
 
   async function saveTarget() {
     setSaving(true);
@@ -104,15 +113,31 @@ export default function WatchDetail() {
           <EstimateLine label="In-store" est={estimates?.inStore ?? null} />
           <EstimateLine label="Online" est={estimates?.online ?? null} />
 
-          {targets ? (
+          <Text style={styles.section}>For which trip?</Text>
+          <View style={styles.chips}>
+            {DESTINATIONS.map((m) => (
+              <Pressable
+                key={m.code}
+                style={[styles.chip, itemDest === m.code && styles.chipSel]}
+                onPress={() => chooseTrip(m.code)}
+              >
+                <Text style={[styles.chipText, itemDest === m.code && styles.chipTextSel]}>{m.flag} {m.name}</Text>
+              </Pressable>
+            ))}
+            <Pressable style={[styles.chip, !itemDest && styles.chipSel]} onPress={() => chooseTrip(null)}>
+              <Text style={[styles.chipText, !itemDest && styles.chipTextSel]}>Any trip</Text>
+            </Pressable>
+          </View>
+
+          {targets && tripMarket ? (
             <Card style={styles.goodCard}>
-              <Text style={styles.goodTitle}>A good price in {dest?.name}</Text>
+              <Text style={styles.goodTitle}>A good price in {tripMarket.name}</Text>
               <Text style={styles.goodLine}>🤔 Worth it under <Text style={styles.goodAmt}>{format(targets.worthIt)}</Text></Text>
               <Text style={styles.goodLine}>🛍️ Great under <Text style={styles.goodAmt}>{format(targets.great)}</Text></Text>
-              <Text style={styles.goodNote}>Shelf price before the {Math.round(taxFreeRate(dest!.code) * 100)}% tax refund · FX as of {FX_SNAPSHOT.asOf}.</Text>
+              <Text style={styles.goodNote}>Shelf price before the {Math.round(taxFreeRate(tripMarket.code) * 100)}% tax refund · FX as of {FX_SNAPSHOT.asOf}.</Text>
             </Card>
           ) : (
-            <Text style={styles.dim}>Pick a destination to see what a good price looks like there.</Text>
+            <Text style={styles.dim}>Choose a trip to see what a good price looks like there.</Text>
           )}
 
           <Text style={styles.section}>Your target</Text>
@@ -185,6 +210,11 @@ const styles = StyleSheet.create({
   name: { fontSize: 22, fontWeight: '800', color: theme.ink, marginTop: 2 },
   size: { fontSize: 13, color: theme.slate, marginTop: 4 },
   section: { fontSize: 12, fontWeight: '700', color: theme.slate, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { borderWidth: 1, borderColor: theme.line, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: theme.white },
+  chipSel: { borderColor: theme.coral, backgroundColor: '#FDECEE' },
+  chipText: { fontSize: 13, fontWeight: '600', color: theme.slate },
+  chipTextSel: { color: theme.coral },
   estRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: theme.white, borderWidth: 1, borderColor: theme.line, borderRadius: 12, padding: 14 },
   estLabel: { fontSize: 13, color: theme.slate, fontWeight: '600' },
   estPrice: { fontSize: 16, fontWeight: '800', color: theme.ink },

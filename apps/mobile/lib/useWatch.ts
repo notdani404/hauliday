@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getWatchlistIds, addWatch, removeWatch } from './catalog';
+import { useTrip } from './trip';
 
 /** Manages the current user's watchlist set with optimistic toggling. */
 export function useWatch() {
+  const { dest } = useTrip();
   const [ids, setIds] = useState<Set<string>>(new Set());
 
   const reload = useCallback(() => {
@@ -27,12 +29,12 @@ export function useWatch() {
       });
       try {
         if (has) await removeWatch(variantId);
-        else await addWatch(variantId);
+        else await addWatch(variantId, dest?.code ?? null); // tag with the current trip
       } catch {
         reload(); // revert to server truth on failure
       }
     },
-    [ids, reload],
+    [ids, reload, dest],
   );
 
   return { ids, toggle, reload };

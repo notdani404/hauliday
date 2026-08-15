@@ -281,3 +281,20 @@ separate key (Android/iOS restriction) or a proxy. Also add the key to Vercel en
 *Rejected:* classic Places web service (no browser CORS); Maps JS SDK (web-only, no native);
 proxying through a worker now (unneeded for web).
 2026-08
+
+**D-029 · Watchlist is per-destination (you save for different trips)**
+A saved item is tagged with the destination it's for (`watchlist.dest_country`, M15, nullable =
+"any trip"), defaulting to the current trip when you add it. The Watchlist tab **groups by
+country**; the detail lets you change an item's trip; the "worth it under X" good-price target
+is computed for *that item's* destination, not just the active trip.
+*Rejected:* one flat global list (can't tell which trip a save is for); multiple countries per
+item (a join table — overkill for now; re-tag if plans change).
+2026-08
+
+**D-030 · Google sign-in is plain OAuth (anon→merge deferred)**
+`linkIdentity` (to merge an anonymous user's contributions into their Google account) fails at
+the OAuth callback when that Google account is already a permanent user, bouncing back with an
+error and no session — which stranded users on the landing. Reverted to plain `signInWithOAuth`
+(reliable for new + returning), and the landing waits through the callback. Merging anon→Google
+needs callback-error handling and is a follow-up.
+2026-08

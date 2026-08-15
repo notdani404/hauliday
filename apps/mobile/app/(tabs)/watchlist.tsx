@@ -1,18 +1,18 @@
-import { useCallback, useState } from 'react';
-import { Text, View, Pressable, StyleSheet, FlatList } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Text, View, Pressable, StyleSheet, SectionList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { format } from '@hauliday/money';
 import { suggestedShelfTargets } from '@hauliday/verdict';
 import { useTrip } from '../../lib/trip';
-import { taxFreeRate } from '../../lib/markets';
+import { marketByCode, taxFreeRate } from '../../lib/markets';
 import { FX_SNAPSHOT } from '../../lib/fxSnapshot';
 import { getWatchlist, removeWatch, type WatchItem } from '../../lib/catalog';
 import { BrandMark, WatchHeart, moneyText } from '../../lib/ui';
 import { theme } from '../../lib/theme';
 
 export default function WatchlistTab() {
-  const { home, dest } = useTrip();
+  const { home } = useTrip();
   const [items, setItems] = useState<WatchItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -30,16 +30,34 @@ export default function WatchlistTab() {
     await removeWatch(variantId);
   }
 
+  const sections = useMemo(() => {
+    const groups = new Map<string, WatchItem[]>();
+    for (const it of items) {
+      const key = it.destCountry ?? 'any';
+      const arr = groups.get(key) ?? [];
+      arr.push(it);
+      groups.set(key, arr);
+    }
+    return [...groups.entries()]
+      .sort((a, b) => (a[0] === 'any' ? 1 : b[0] === 'any' ? -1 : a[0].localeCompare(b[0])))
+      .map(([code, data]) => {
+        const m = code === 'any' ? null : marketByCode(code);
+        return { code, title: m ? `${m.flag} ${m.name}` : 'Any trip', data };
+      });
+  }, [items]);
+
   function lookFor(item: WatchItem): string | null {
-    if (!item.homePrice || !dest) return null;
-    const rate = FX_SNAPSHOT.perUnitSGD[dest.currency];
+    const code = item.destCountry;
+    const m = code ? marketByCode(code) : null;
+    if (!item.homePrice || !m) return null;
+    const rate = FX_SNAPSHOT.perUnitSGD[m.currency];
     if (!rate) return null;
     const t = suggestedShelfTargets(item.homePrice, {
-      taxFreeRate: taxFreeRate(dest.code),
+      taxFreeRate: taxFreeRate(m.code),
       rate,
-      destCurrency: dest.currency,
+      destCurrency: m.currency,
     });
-    return `In ${dest.name}: worth it under ${format(t.worthIt)}`;
+    return `Worth it under ${format(t.worthIt)}`;
   }
 
   return (
@@ -48,37 +66,29 @@ export default function WatchlistTab() {
         <BrandMark />
       </View>
       <Text style={styles.title}>Watchlist</Text>
-      <Text style={styles.sub}>
-        {dest
-          ? `What to look for in ${dest.name}. Tap an item to set a target or log a price.`
-          : 'Pick a destination to see what a good price looks like there.'}
-      </Text>
+      <Text style={styles.sub}>Saved by trip. Tap an item to set a target, change its trip, or log a price.</Text>
 
-      <FlatList
-        data={items}
+      <SectionList
+        sections={sections}
         keyExtractor={(i) => i.variant.variantId}
-        contentContainerStyle={{ gap: 10, paddingBottom: 12 }}
+        stickySectionHeadersEnabled={false}
+        contentContainerStyle={{ paddingBottom: 16 }}
         ListEmptyComponent={
           loaded ? (
-            <Text style={styles.empty}>
-              Nothing saved yet. Tap the ♡ on any product in the Catalogue to add it here.
-            </Text>
+            <Text style={styles.empty}>Nothing saved yet. Tap the ♡ on any product in the Catalogue to add it here.</Text>
           ) : null
         }
+        renderSectionHeader={({ section }) => <Text style={styles.sectionHeader}>{section.title}</Text>}
         renderItem={({ item }) => {
           const look = lookFor(item);
           return (
             <View style={styles.row}>
               <Pressable
                 style={styles.rowMain}
-                onPress={() =>
-                  router.push({ pathname: '/watch/[variantId]', params: { variantId: item.variant.variantId } })
-                }
+                onPress={() => router.push({ pathname: '/watch/[variantId]', params: { variantId: item.variant.variantId } })}
               >
                 <Text style={styles.brand}>{item.variant.brand}</Text>
-                <Text style={styles.name} numberOfLines={2}>
-                  {item.variant.productName}
-                </Text>
+                <Text style={styles.name} numberOfLines={2}>{item.variant.productName}</Text>
                 <Text style={styles.meta}>
                   {item.homePrice ? `${moneyText(item.homePrice)} home` : 'no home price'}
                   {item.target ? `  ·  target ${format(item.target)}` : ''}
@@ -100,16 +110,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800', color: theme.ink },
   sub: { fontSize: 13, color: theme.slate, lineHeight: 19 },
   empty: { textAlign: 'center', color: theme.slate, marginTop: 32, fontSize: 14, lineHeight: 21, paddingHorizontal: 12 },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: theme.white,
-    borderWidth: 1,
-    borderColor: theme.line,
-    borderRadius: 12,
-    padding: 12,
-  },
+  sectionHeader: { fontSize: 12, fontWeight: '800', color: theme.slate, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 16, marginBottom: 8 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: theme.white, borderWidth: 1, borderColor: theme.line, borderRadius: 12, padding: 12, marginBottom: 8 },
   rowMain: { flex: 1 },
   brand: { fontSize: 11, color: theme.coral, fontWeight: '700', textTransform: 'uppercase' },
   name: { fontSize: 14, fontWeight: '600', color: theme.ink, marginTop: 1 },

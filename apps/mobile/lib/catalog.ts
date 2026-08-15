@@ -225,10 +225,23 @@ export async function getWatchlistIds(): Promise<Set<string>> {
   return new Set((data ?? []).map((r) => r.variant_id as string));
 }
 
-export async function addWatch(variantId: string): Promise<void> {
+export async function addWatch(variantId: string, destCountry?: string | null): Promise<void> {
   const uid = await currentUid();
   if (!uid) return;
-  await supabase.from('watchlist').insert({ user_id: uid, variant_id: variantId });
+  await supabase
+    .from('watchlist')
+    .insert({ user_id: uid, variant_id: variantId, dest_country: destCountry ?? null });
+}
+
+/** Set/clear which destination a saved item is for. */
+export async function setWatchlistCountry(variantId: string, country: string | null): Promise<void> {
+  const uid = await currentUid();
+  if (!uid) return;
+  await supabase
+    .from('watchlist')
+    .update({ dest_country: country })
+    .eq('user_id', uid)
+    .eq('variant_id', variantId);
 }
 
 export async function removeWatch(variantId: string): Promise<void> {
@@ -245,6 +258,7 @@ export interface WatchItem {
   observationCount: number;
   target: Money | null;
   note: string | null;
+  destCountry: string | null;
 }
 
 /** The user's saved variants with home estimate + target inline, newest first. */
@@ -267,6 +281,7 @@ export async function getWatchlist(country = 'SG'): Promise<WatchItem[]> {
     target_amount_minor: number | null;
     target_currency: string | null;
     note: string | null;
+    dest_country: string | null;
   }>;
   return rows.map((r) => ({
     variant: {
@@ -290,6 +305,7 @@ export async function getWatchlist(country = 'SG'): Promise<WatchItem[]> {
         ? money(BigInt(r.target_amount_minor), r.target_currency)
         : null,
     note: r.note,
+    destCountry: r.dest_country,
   }));
 }
 

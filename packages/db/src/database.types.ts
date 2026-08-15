@@ -499,6 +499,7 @@ export type Database = {
       watchlist: {
         Row: {
           created_at: string
+          dest_country: string | null
           note: string | null
           target_amount_minor: number | null
           target_currency: string | null
@@ -507,6 +508,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          dest_country?: string | null
           note?: string | null
           target_amount_minor?: number | null
           target_currency?: string | null
@@ -515,6 +517,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          dest_country?: string | null
           note?: string | null
           target_amount_minor?: number | null
           target_currency?: string | null
@@ -617,6 +620,7 @@ export type Database = {
         Returns: {
           brand: string
           canonical_name: string
+          dest_country: string
           est_amount_minor: number
           est_confidence: number
           est_count: number
