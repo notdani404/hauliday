@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { useTrip } from '../../lib/trip';
 import { useCapture } from '../../lib/capture';
 import { searchVariants, getHomeEstimates, type SearchResult } from '../../lib/catalog';
-import { TripHeader, moneyText } from '../../lib/ui';
+import { TripHeader, BrandMark, moneyText } from '../../lib/ui';
 import { theme } from '../../lib/theme';
 
 export default function SearchTab() {
@@ -39,6 +39,9 @@ export default function SearchTab() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+      <View style={styles.brandRow}>
+        <BrandMark />
+      </View>
       <TripHeader />
       <TextInput
         style={styles.input}
@@ -94,6 +97,7 @@ export default function SearchTab() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 20, paddingTop: 8, gap: 10 },
+  brandRow: { paddingTop: 4 },
   input: {
     borderWidth: 1,
     borderColor: theme.line,

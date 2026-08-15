@@ -16,7 +16,7 @@ import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'ex
 import { useTrip } from '../../lib/trip';
 import { useCapture } from '../../lib/capture';
 import { resolveBarcode, getHomeEstimates } from '../../lib/catalog';
-import { Button, TripHeader } from '../../lib/ui';
+import { Button, TripHeader, BrandMark } from '../../lib/ui';
 import { theme } from '../../lib/theme';
 
 export default function ScanTab() {
@@ -68,6 +68,9 @@ export default function ScanTab() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <View style={styles.brandRow}>
+          <BrandMark />
+        </View>
         {notice ? (
           <View style={styles.toast}>
             <Text style={styles.toastText}>{notice}</Text>
@@ -136,6 +139,7 @@ export default function ScanTab() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 20, paddingTop: 8 },
   flex: { flex: 1, gap: 10 },
+  brandRow: { paddingTop: 4 },
   toast: { backgroundColor: '#E4F3EA', borderRadius: 10, padding: 10 },
   toastText: { color: theme.green, fontWeight: '700', fontSize: 13, textAlign: 'center' },
   camWrap: { flex: 1, borderRadius: 18, overflow: 'hidden', backgroundColor: '#1D1D22' },

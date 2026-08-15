@@ -21,6 +21,8 @@ import {
   GENDER_OPTIONS,
   type ProfileForm,
 } from '../../lib/profile';
+import { useTrip } from '../../lib/trip';
+import { HOME_MARKETS, marketByCode } from '../../lib/markets';
 import { Button } from '../../lib/ui';
 import { theme } from '../../lib/theme';
 
@@ -93,6 +95,7 @@ function ProfileEditor({
   busy: boolean;
 }) {
   const { user } = useAuthUser();
+  const { home, setHome } = useTrip();
   const [form, setForm] = useState<ProfileForm>(emptyProfile);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -100,7 +103,11 @@ function ProfileEditor({
 
   useEffect(() => {
     getProfile(userId).then((existing) => {
-      setForm(existing ?? { ...emptyProfile, ...googleDefaults(user) });
+      const base = existing ?? { ...emptyProfile, ...googleDefaults(user) };
+      if (!base.country) base.country = home.code; // default home market
+      setForm(base);
+      const m = marketByCode(base.country);
+      if (m) setHome(m); // saved home market drives comparisons
       setLoading(false);
     });
   }, [userId]);
@@ -114,6 +121,8 @@ function ProfileEditor({
     setSaving(true);
     try {
       await saveProfile(userId, form);
+      const m = marketByCode(form.country);
+      if (m) setHome(m); // apply chosen home market to comparisons
       setSaved(true);
     } finally {
       setSaving(false);
@@ -186,7 +195,24 @@ function ProfileEditor({
             placeholderTextColor={theme.slate}
           />
 
-          <Field label="Country" value={form.country} onChangeText={set('country')} placeholder="e.g. Singapore" />
+          <Text style={styles.label}>Home market</Text>
+          <Text style={styles.homeHint}>Where you shop at home — we compare foreign prices against this.</Text>
+          <View style={styles.chips}>
+            {HOME_MARKETS.map((m) => (
+              <Pressable
+                key={m.code}
+                style={[styles.chip, form.country === m.code && styles.chipSel]}
+                onPress={() => {
+                  set('country')(m.code);
+                  setHome(m);
+                }}
+              >
+                <Text style={[styles.chipText, form.country === m.code && styles.chipTextSel]}>
+                  {m.flag} {m.name}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
           <View style={styles.actions}>
             <Button title={saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save profile'} onPress={() => void save()} disabled={saving} />
@@ -243,6 +269,7 @@ const styles = StyleSheet.create({
   name: { fontSize: 18, fontWeight: '800', color: theme.ink },
   email: { fontSize: 13, color: theme.slate },
   why: { fontSize: 12, color: theme.slate, lineHeight: 18, marginTop: 16, marginBottom: 8 },
+  homeHint: { fontSize: 11, color: theme.slate, marginBottom: 8 },
   fieldWrap: { marginTop: 12 },
   rowTwo: { flexDirection: 'row', gap: 12 },
   label: { fontSize: 12, fontWeight: '700', color: theme.slate, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 12, marginBottom: 6 },

@@ -222,3 +222,14 @@ Storage bucket + moderation, deferred). Gender is optional + inclusive (female/m
 prefer-not-to-say/self-describe). Never shared.
 *Rejected:* full birthdate (identity-grade PII); phone capture; custom photo upload now.
 2026-08
+
+**D-024 · profile.country is an ISO home-market enum and is the default comparison home**
+Profile country is no longer free text — it's a constrained selection from the app's
+`HOME_MARKETS` enum, stored as an ISO alpha-2 code (`char(2)`, M11), matching how country/
+market codes work elsewhere. It **sets the user's home market for comparison**: choosing it
+updates the trip home, so `price_estimate` reads run against that country. Currently
+HOME_MARKETS = [SG] (the wedge); the picker + column expand as home markets gain data.
+Branding: brand SVGs (in ~/Codebases/Personal/Logos/Hauliday) applied as app icon/favicon/
+splash + welcome lockup + a compact BrandMark on Scan/Search; web OG via a post-build head
+inject (Expo output:"single" ignores +html.tsx).
+2026-08

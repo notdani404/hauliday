@@ -1,9 +1,23 @@
 import type { ReactNode } from 'react';
-import { Text, View, Pressable, StyleSheet, type ViewStyle } from 'react-native';
+import { Text, View, Image, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import { router } from 'expo-router';
 import { format, type Money } from '@hauliday/money';
 import { useTrip } from './trip';
 import { theme } from './theme';
+
+const HORIZONTAL_RATIO = 633 / 260;
+
+/** Compact Hauliday brand mark (icon + wordmark), for screen headers. */
+export function BrandMark({ height = 26 }: { height?: number }) {
+  return (
+    <Image
+      source={require('../assets/logo-horizontal.png')}
+      style={{ height, width: height * HORIZONTAL_RATIO }}
+      resizeMode="contain"
+      accessibilityLabel="Hauliday"
+    />
+  );
+}
 
 /** Home ⇄ destination strip shown atop the Scan/Search tabs. Tap to change dest. */
 export function TripHeader() {
