@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, Image, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTrip } from '../lib/trip';
@@ -13,7 +13,12 @@ export default function Welcome() {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.body}>
-        <Text style={styles.wordmark}>Hauliday</Text>
+        <Image
+          source={require('../assets/logo-vertical.png')}
+          style={styles.logo}
+          resizeMode="contain"
+          accessibilityLabel="Hauliday"
+        />
         <Text style={styles.tagline}>Know before you haul.</Text>
         <Text style={styles.sub}>
           Compare prices.{'\n'}Shop smarter.{'\n'}Make every haul worth it.
@@ -29,7 +34,7 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 24 },
   body: { flex: 1, justifyContent: 'center', gap: 10 },
-  wordmark: { fontSize: 40, fontWeight: '800', color: theme.ink, letterSpacing: -0.5 },
+  logo: { width: 200, height: 254, marginLeft: -6, marginBottom: 4 },
   tagline: { fontSize: 18, fontWeight: '700', color: theme.coral },
   sub: { fontSize: 15, lineHeight: 26, color: theme.slate, marginTop: 8 },
   footer: { paddingBottom: 24 },

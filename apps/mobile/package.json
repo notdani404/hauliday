@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build:web": "expo export -p web",
+    "build:web": "expo export -p web && node scripts/inject-head.mjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
