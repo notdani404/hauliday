@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, ScrollView } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useCapture } from '../lib/capture';
@@ -96,6 +96,14 @@ export default function Product() {
               {v.sizeValue ? `${v.sizeValue}${v.sizeUnit ?? ''} · ` : ''}
               {v.market} market
             </Text>
+            {session.gtin ? (
+              <View style={styles.idRow}>
+                <Text style={styles.idLabel}>JAN</Text>
+                <Text style={styles.idValue} selectable>
+                  {session.gtin}
+                </Text>
+              </View>
+            ) : null}
           </View>
           <WatchHeart active={ids.has(v.variantId)} onPress={() => void toggle(v.variantId)} />
         </View>
@@ -155,6 +163,25 @@ const styles = StyleSheet.create({
   brand: { fontSize: 13, color: theme.coral, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   name: { fontSize: 22, fontWeight: '800', color: theme.ink, marginTop: 2 },
   size: { fontSize: 13, color: theme.slate, marginTop: 4 },
+  idRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 },
+  idLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.slate,
+    letterSpacing: 0.5,
+    backgroundColor: theme.line,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    overflow: 'hidden',
+  },
+  idValue: {
+    fontSize: 13,
+    color: theme.ink,
+    fontWeight: '600',
+    letterSpacing: 1,
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+  },
   sectionTitle: { fontSize: 13, fontWeight: '700', color: theme.slate, textTransform: 'uppercase', letterSpacing: 0.5 },
   estCard: { gap: 4 },
   retailerCard: { flexDirection: 'row', alignItems: 'center', gap: 12 },
