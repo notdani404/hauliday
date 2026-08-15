@@ -211,3 +211,14 @@ Maps Platform key. See `docs/plans/store-capture.md`.
 *Rejected:* mandatory store (adds friction to the core loop); resolving store at capture time
 (breaks offline).
 2026-08
+
+**D-023 · Minimal, optional user profile; demographics via birth-year + gender, not identity PII**
+A `profile` table (M10) keyed to auth.users, owner-only RLS, every field nullable — profile is
+never required to use the app. Demographic signal is **birth YEAR + gender + country**, not a
+full DOB (birth year buckets age with far less sensitivity next to name+email). Names/display
+prefill from the Google identity. **No phone** (email suffices — collecting it is PII + friction
+for no demographic value). **Avatar is the Google picture URL, not an uploaded file** (upload =
+Storage bucket + moderation, deferred). Gender is optional + inclusive (female/male/non-binary/
+prefer-not-to-say/self-describe). Never shared.
+*Rejected:* full birthdate (identity-grade PII); phone capture; custom photo upload now.
+2026-08
