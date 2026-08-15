@@ -14,9 +14,14 @@ export interface Market {
   cityId: string; // stable locality slug, e.g. 'singapore', 'bangkok'
 }
 
-/** Home markets. The wedge is Singapore (one city = its country). */
+/**
+ * Home markets. The wedge is Singapore; Malaysia is the second (D-037) — the
+ * verdict now computes in the chosen home's currency. A market only carries a
+ * useful verdict once it has home-price data (Phase B, per market).
+ */
 export const HOME_MARKETS: Market[] = [
   { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD', cityId: 'singapore' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', currency: 'MYR', cityId: 'kuala-lumpur' },
 ];
 
 /**

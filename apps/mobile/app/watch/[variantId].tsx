@@ -6,7 +6,7 @@ import { fromDecimal, format, type Money } from '@hauliday/money';
 import { suggestedShelfTargets } from '@hauliday/verdict';
 import { useTrip } from '../../lib/trip';
 import { taxFreeRate, marketByCode, DESTINATION_COUNTRIES } from '../../lib/markets';
-import { FX_SNAPSHOT } from '../../lib/fxSnapshot';
+import { FX_SNAPSHOT, crossRate } from '../../lib/fxSnapshot';
 import {
   getWatchlist,
   getHomeEstimates,
@@ -65,11 +65,12 @@ export default function WatchDetail() {
   }
 
   const tripMarket = itemDest ? marketByCode(itemDest) ?? null : dest;
+  const targetRate = tripMarket ? crossRate(tripMarket.currency, home.currency) : null;
   const targets =
-    item.homePrice && tripMarket && FX_SNAPSHOT.perUnitSGD[tripMarket.currency]
+    item.homePrice && tripMarket && targetRate
       ? suggestedShelfTargets(item.homePrice, {
           taxFreeRate: taxFreeRate(tripMarket.code),
-          rate: FX_SNAPSHOT.perUnitSGD[tripMarket.currency]!,
+          rate: targetRate, // home units per dest unit
           destCurrency: tripMarket.currency,
         })
       : null;

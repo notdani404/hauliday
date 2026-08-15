@@ -6,7 +6,7 @@ import { format } from '@hauliday/money';
 import { suggestedShelfTargets } from '@hauliday/verdict';
 import { useTrip } from '../../lib/trip';
 import { marketByCode, taxFreeRate } from '../../lib/markets';
-import { FX_SNAPSHOT } from '../../lib/fxSnapshot';
+import { crossRate } from '../../lib/fxSnapshot';
 import { getWatchlist, removeWatch, type WatchItem } from '../../lib/catalog';
 import { BrandMark, WatchHeart, moneyText } from '../../lib/ui';
 import { theme } from '../../lib/theme';
@@ -50,7 +50,7 @@ export default function WatchlistTab() {
     const code = item.destCountry;
     const m = code ? marketByCode(code) : null;
     if (!item.homePrice || !m) return null;
-    const rate = FX_SNAPSHOT.perUnitSGD[m.currency];
+    const rate = crossRate(m.currency, home.currency); // home units per dest unit
     if (!rate) return null;
     const t = suggestedShelfTargets(item.homePrice, {
       taxFreeRate: taxFreeRate(m.code),

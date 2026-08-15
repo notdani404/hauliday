@@ -6,7 +6,7 @@ import { fromDecimal, scale, format, minorUnits, type Money } from '@hauliday/mo
 import { useCapture } from '../lib/capture';
 import { useTrip } from '../lib/trip';
 import { taxFreeRate } from '../lib/markets';
-import { toHomeSGD, FX_SNAPSHOT } from '../lib/fxSnapshot';
+import { toHome, FX_SNAPSHOT } from '../lib/fxSnapshot';
 import { Button } from '../lib/ui';
 import { theme } from '../lib/theme';
 
@@ -23,7 +23,7 @@ function tryParse(text: string, currency: Money['currency']): Money | null {
 }
 
 export default function Price() {
-  const { mode, shopping } = useTrip();
+  const { mode, shopping, home } = useTrip();
   const { session, setDestShelfMinor } = useCapture();
   const [text, setText] = useState('');
 
@@ -39,11 +39,15 @@ export default function Price() {
 
   let convLine = '';
   if (parsed && !atHome) {
-    const home = toHomeSGD(parsed);
-    convLine = `≈ ${format(home)}`;
-    if (tf > 0) {
-      const effective = toHomeSGD(scale(parsed, 1 - tf));
-      convLine += `   ·   tax-free ≈ ${format(effective)}`;
+    const homeAmt = toHome(parsed, home.currency);
+    if (homeAmt) {
+      convLine = `≈ ${format(homeAmt)}`;
+      if (tf > 0) {
+        const effective = toHome(scale(parsed, 1 - tf), home.currency);
+        if (effective) convLine += `   ·   tax-free ≈ ${format(effective)}`;
+      }
+    } else {
+      convLine = `No ${cur}→${home.currency} rate yet`;
     }
   }
 

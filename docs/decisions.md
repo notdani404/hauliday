@@ -363,3 +363,21 @@ column (city slug), stamped at capture from the shopping market's `cityId`; exis
 destination crowd volume justifies per-city — no read-path change yet. Watchlist "which trip?" stays
 country-level (D-029 groups by country). First live corridor: SG→Bangkok.
 2026-08
+
+**D-037 · Broad SG catalogue load + multi–home-market Phase A**
+*Catalogue:* loaded a grounded broad-SG set — 78 products (→88 total variants), 32 scannable via
+checksum-validated EANs (30 shared/international GTINs, best chance of also scanning abroad). Only the
+16 real "found" prices became observations (source 'scrape' + source_url, locality 'singapore'); the
+~227 LLM price *estimates* were NOT loaded — observations-not-guesses (#1). One-off idempotent loader in
+scratchpad; candidates file `sg-catalogue-candidates.json`. Most items show "no price yet" until real
+prices arrive — honest by design.
+*Multi-home Phase A (plan `docs/plans/multi-home-market.md`):* the verdict now computes in the chosen
+home currency, not a hardcoded SGD. `fxSnapshot` keeps SGD as the pivot and adds `crossRate(base,quote)
+= perUnitSGD[base]/perUnitSGD[quote]` (exact BigInt decimal division) + `toHome(amount, homeCurrency)`
+returning **null instead of throwing** on a missing rate (also kills the audit's render-throw). `result`/
+`price`/`watchlist`/`watch` pass `quote = home.currency`; a missing corridor rate shows a graceful "can't
+convert yet" instead of a fake verdict. Malaysia (MYR) added to `HOME_MARKETS`; the profile picker now
+has a real choice. **SGD conversions are byte-identical to before** (SG verdicts unchanged). No schema
+change (`profile.country` already generic; Money already registers MYR). Phase B = seed MY home-price
+data before the MY verdict is actually useful; anon home-switching deferred to then.
+2026-08

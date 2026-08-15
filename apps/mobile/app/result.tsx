@@ -7,7 +7,7 @@ import { computeVerdict, type VerdictState } from '@hauliday/verdict';
 import { useCapture } from '../lib/capture';
 import { useTrip } from '../lib/trip';
 import { taxFreeRate } from '../lib/markets';
-import { FX_SNAPSHOT } from '../lib/fxSnapshot';
+import { FX_SNAPSHOT, crossRate } from '../lib/fxSnapshot';
 import { useWatch } from '../lib/useWatch';
 import { Button, confidenceLabel } from '../lib/ui';
 import { theme } from '../lib/theme';
@@ -51,13 +51,32 @@ export default function Result() {
       ? 'online'
       : null;
   const homeRef = homeEst?.price ?? null;
-  const rate = FX_SNAPSHOT.perUnitSGD[dest.currency];
+  const rate = crossRate(dest.currency, home.currency);
+
+  if (!rate) {
+    // No card FX for this corridor yet — don't fabricate a verdict (#4). Show the
+    // sticker price honestly and bail on the savings math.
+    return (
+      <SafeAreaView style={styles.screen}>
+        <View style={styles.noFx}>
+          <Text style={styles.noFxTitle}>Can't convert this one yet</Text>
+          <Text style={styles.noFxSub}>
+            We don't have a card FX rate for {dest.currency} → {home.currency} yet. The shelf price is{' '}
+            {format(destShelf)}.
+          </Text>
+        </View>
+        <View style={styles.footer}>
+          <Button title="Scan another" onPress={() => router.replace('/scan')} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const verdict = computeVerdict({
     destShelf,
     taxFreeRate: taxFreeRate(dest.code),
     homeReference: homeRef,
-    fx: { base: dest.currency, quote: 'SGD', rate: rate ?? '0' },
+    fx: { base: dest.currency, quote: home.currency, rate },
   });
 
   return (
@@ -191,5 +210,8 @@ const styles = StyleSheet.create({
   conf_low: { backgroundColor: '#F0ECEA' },
   confText: { fontSize: 11, fontWeight: '700', color: theme.ink },
   fxNote: { fontSize: 11, color: theme.slate, textAlign: 'center' },
+  noFx: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10, paddingHorizontal: 12 },
+  noFxTitle: { fontSize: 20, fontWeight: '800', color: theme.ink },
+  noFxSub: { fontSize: 14, color: theme.slate, textAlign: 'center', lineHeight: 21 },
   footer: { paddingBottom: 24, paddingTop: 8 },
 });
