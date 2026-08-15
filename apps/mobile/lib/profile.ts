@@ -75,6 +75,28 @@ export async function saveProfile(userId: string, p: ProfileForm): Promise<void>
   if (error) throw error;
 }
 
+export type TrustTier = 'new' | 'trusted' | 'verified' | 'flagged';
+
+export interface ProfileStats {
+  contributions: number; // price observations this user has shared
+  watchlist: number; // items on their watchlist
+  tier: TrustTier; // contributor trust tier
+}
+
+/** Lightweight profile stats for the social-style header (head counts only). */
+export async function getProfileStats(userId: string): Promise<ProfileStats> {
+  const [obs, watch, trust] = await Promise.all([
+    supabase.from('observation').select('id', { count: 'exact', head: true }).eq('observer_id', userId),
+    supabase.from('watchlist').select('variant_id', { count: 'exact', head: true }).eq('user_id', userId),
+    supabase.from('observer_trust').select('tier').eq('user_id', userId).maybeSingle(),
+  ]);
+  return {
+    contributions: obs.count ?? 0,
+    watchlist: watch.count ?? 0,
+    tier: (trust.data?.tier as TrustTier) ?? 'new',
+  };
+}
+
 export const GENDER_OPTIONS: { value: string; label: string }[] = [
   { value: 'female', label: 'Female' },
   { value: 'male', label: 'Male' },
