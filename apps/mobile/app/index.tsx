@@ -77,10 +77,10 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: theme.bg, paddingHorizontal: 24 },
   center: { alignItems: 'center', justifyContent: 'center', gap: 20 },
-  body: { flex: 1, justifyContent: 'center', gap: 10 },
-  logo: { width: 200, height: 254, marginLeft: -6, marginBottom: 4 },
-  tagline: { fontSize: 18, fontWeight: '700', color: theme.coral },
-  sub: { fontSize: 15, lineHeight: 26, color: theme.slate, marginTop: 8 },
+  body: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 },
+  logo: { width: 210, height: 266, marginBottom: 4 },
+  tagline: { fontSize: 18, fontWeight: '700', color: theme.coral, textAlign: 'center' },
+  sub: { fontSize: 15, lineHeight: 26, color: theme.slate, textAlign: 'center' },
   footer: { paddingBottom: 24 },
   note: { fontSize: 12, color: theme.slate, textAlign: 'center', marginTop: 12, lineHeight: 17 },
 });
