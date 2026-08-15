@@ -37,27 +37,20 @@ export function useAuthUser(): AuthState {
 }
 
 /**
- * Start a Google OAuth flow and return its redirect URL. If the current user is
- * anonymous we LINK Google to that same user (so their scans/contributions and
- * observer_trust carry over). If linking fails — e.g. the Google account is
- * already a separate permanent user — we fall back to a normal sign-in as that
- * account. Uses skipBrowserRedirect so the caller controls the redirect.
+ * Start a Google OAuth flow and return its redirect URL. Plain sign-in — reliable
+ * for both new and returning accounts. (We tried linkIdentity to merge an
+ * anonymous user's contributions, but when the Google account is already a
+ * permanent user the link fails at the callback and bounces the user back with an
+ * error instead of a session. Merging anon→Google needs return-error handling and
+ * is a follow-up.) skipBrowserRedirect lets the caller control the redirect.
  */
 async function startGoogleFlow(redirectTo: string): Promise<string> {
-  const { data: sess } = await supabase.auth.getSession();
-  const isAnonymous = sess.session?.user?.is_anonymous ?? false;
-  const opts = { provider: 'google' as const, options: { redirectTo, skipBrowserRedirect: true } };
-
-  if (isAnonymous) {
-    const linked = await supabase.auth.linkIdentity(opts);
-    if (!linked.error && linked.data?.url) return linked.data.url;
-    // fall through: identity already linked to another user, or linking disabled
-  }
-  const signedIn = await supabase.auth.signInWithOAuth(opts);
-  if (signedIn.error || !signedIn.data?.url) {
-    throw signedIn.error ?? new Error('No OAuth URL returned');
-  }
-  return signedIn.data.url;
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo, skipBrowserRedirect: true },
+  });
+  if (error || !data?.url) throw error ?? new Error('No OAuth URL returned');
+  return data.url;
 }
 
 /**

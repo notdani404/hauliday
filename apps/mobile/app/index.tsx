@@ -16,17 +16,27 @@ export default function Welcome() {
 
   const enterApp = () => router.replace(dest ? '/(tabs)/scan' : '/dest-country');
 
+  // Safety: never hang on the splash (e.g. an OAuth callback that errored).
+  useEffect(() => {
+    const t = setTimeout(() => setDeciding(false), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
   // Returning signed-in users skip the landing: straight in if they have a
-  // profile, into onboarding if they're new.
+  // profile, into onboarding if they're new. While an OAuth callback is being
+  // processed (code/token in the URL), keep the splash so we don't flash the
+  // landing before the session resolves.
   useEffect(() => {
     if (loading || !hydrated) return;
     if (user && !isAnonymous) {
       getProfile(user.id).then((profile) => {
         router.replace(profile ? (dest ? '/(tabs)/scan' : '/dest-country') : '/onboarding');
       });
-    } else {
-      setDeciding(false); // anonymous / no session → show the landing
+      return;
     }
+    const url = typeof window !== 'undefined' ? window.location.search + window.location.hash : '';
+    const pendingOAuth = /[?#&](code|access_token|error)=/.test(url);
+    if (!pendingOAuth) setDeciding(false); // anonymous / no session → show the landing
   }, [loading, hydrated, user, isAnonymous]);
 
   if (deciding) {
