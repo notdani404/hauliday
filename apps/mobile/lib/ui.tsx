@@ -19,17 +19,40 @@ export function BrandMark({ height = 26 }: { height?: number }) {
   );
 }
 
-/** Home ⇄ destination strip shown atop the Scan/Search tabs. Tap to change dest. */
+/** Abroad/Home toggle + context strip atop the Scan/Search tabs. */
 export function TripHeader() {
-  const { home, dest } = useTrip();
+  const { home, dest, mode, setMode } = useTrip();
   return (
-    <Pressable style={styles.trip} onPress={() => router.push('/dest-country')}>
-      <Text style={styles.tripText}>
-        {home.flag} {home.name} <Text style={{ color: theme.coral }}>⇄</Text>{' '}
-        {dest?.flag ?? '📍'} {dest?.name ?? 'Pick a destination'}
-      </Text>
-      <Text style={styles.tripEdit}>Change</Text>
-    </Pressable>
+    <View style={styles.tripWrap}>
+      <View style={styles.modeRow}>
+        {(['abroad', 'home'] as const).map((m) => (
+          <Pressable
+            key={m}
+            style={[styles.modeChip, mode === m && styles.modeChipSel]}
+            onPress={() => setMode(m)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: mode === m }}
+          >
+            <Text style={[styles.modeText, mode === m && styles.modeTextSel]}>
+              {m === 'abroad' ? 'Abroad' : 'Home'}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {mode === 'abroad' ? (
+        <Pressable style={styles.trip} onPress={() => router.push('/dest-country')}>
+          <Text style={styles.tripText}>
+            {home.flag} {home.name} <Text style={{ color: theme.coral }}>⇄</Text>{' '}
+            {dest?.flag ?? '📍'} {dest?.name ?? 'Pick a destination'}
+          </Text>
+          <Text style={styles.tripEdit}>Change</Text>
+        </Pressable>
+      ) : (
+        <View style={styles.trip}>
+          <Text style={styles.tripText}>🏠 Comparing stores in {home.name}</Text>
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -105,6 +128,12 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.45 },
   btnText: { color: theme.white, fontWeight: '700', fontSize: 15 },
   btnGhostText: { color: theme.ink },
+  tripWrap: { gap: 8 },
+  modeRow: { flexDirection: 'row', gap: 8 },
+  modeChip: { flex: 1, alignItems: 'center', borderWidth: 1, borderColor: theme.line, borderRadius: 20, paddingVertical: 8, backgroundColor: theme.white },
+  modeChipSel: { borderColor: theme.coral, backgroundColor: '#FDECEE' },
+  modeText: { fontSize: 13, fontWeight: '700', color: theme.slate },
+  modeTextSel: { color: theme.coral },
   trip: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { isCurrencyCode, money, type Money } from '@hauliday/money';
+import { isCurrencyCode, money, type Money, type CurrencyCode } from '@hauliday/money';
 
 export interface ResolvedVariant {
   variantId: string;
@@ -326,6 +326,45 @@ export async function setWatchlistTarget(
     })
     .eq('user_id', uid)
     .eq('variant_id', variantId);
+}
+
+export interface RetailerPrice {
+  retailerId: string;
+  retailerName: string;
+  price: Money;
+  observationCount: number;
+  freshestObservedOn: string | null;
+}
+
+/** Per-retailer price breakdown for a variant in a country + channel, cheapest first. */
+export async function getRetailerPrices(
+  variantId: string,
+  country: string,
+  channel: Channel,
+): Promise<RetailerPrice[]> {
+  const { data, error } = await supabase.rpc('retailer_prices', {
+    p_variant_id: variantId,
+    p_country: country,
+    p_channel: channel,
+  });
+  if (error || !data) return [];
+  const rows = data as unknown as Array<{
+    retailer_id: string;
+    retailer_name: string;
+    amount_minor: number;
+    currency: string;
+    observation_count: number;
+    freshest_observed_on: string | null;
+  }>;
+  return rows
+    .filter((r) => isCurrencyCode(r.currency))
+    .map((r) => ({
+      retailerId: r.retailer_id,
+      retailerName: r.retailer_name,
+      price: money(BigInt(r.amount_minor), r.currency as CurrencyCode),
+      observationCount: r.observation_count,
+      freshestObservedOn: r.freshest_observed_on,
+    }));
 }
 
 export interface HomeEstimates {

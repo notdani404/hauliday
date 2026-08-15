@@ -23,21 +23,22 @@ function tryParse(text: string, currency: Money['currency']): Money | null {
 }
 
 export default function Price() {
+  const { mode, shopping } = useTrip();
   const { session, setDestShelfMinor } = useCapture();
-  const { dest } = useTrip();
   const [text, setText] = useState('');
 
   useEffect(() => {
-    if (!session || !dest) router.replace('/scan');
-  }, [session, dest]);
-  if (!session || !dest) return null;
+    if (!session || !shopping) router.replace('/scan');
+  }, [session, shopping]);
+  if (!session || !shopping) return null;
 
-  const cur = dest.currency;
-  const tf = taxFreeRate(dest.code);
+  const atHome = mode === 'home';
+  const cur = shopping.currency;
+  const tf = atHome ? 0 : taxFreeRate(shopping.code);
   const parsed = tryParse(text, cur);
 
   let convLine = '';
-  if (parsed) {
+  if (parsed && !atHome) {
     const home = toHomeSGD(parsed);
     convLine = `≈ ${format(home)}`;
     if (tf > 0) {
@@ -49,7 +50,7 @@ export default function Price() {
   const confirm = () => {
     if (!parsed) return;
     setDestShelfMinor(parsed.amountMinor);
-    router.push('/result');
+    router.push(atHome ? '/submit' : '/result');
   };
 
   return (
@@ -59,7 +60,7 @@ export default function Price() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.body}>
-          <Text style={styles.title}>What's on the shelf?</Text>
+          <Text style={styles.title}>{atHome ? "What's the price here?" : "What's on the shelf?"}</Text>
           <Text style={styles.sub}>Enter the price in {cur} — exactly as shown.</Text>
 
           <View style={styles.amountCard}>
@@ -86,11 +87,11 @@ export default function Price() {
               </Text>
             </View>
           )}
-          <Text style={styles.fxNote}>Card FX as of {FX_SNAPSHOT.asOf}.</Text>
+          {!atHome && <Text style={styles.fxNote}>Card FX as of {FX_SNAPSHOT.asOf}.</Text>}
         </View>
 
         <View style={styles.footer}>
-          <Button title="See the verdict" onPress={confirm} disabled={!parsed} />
+          <Button title={atHome ? 'Log this price' : 'See the verdict'} onPress={confirm} disabled={!parsed} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

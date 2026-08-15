@@ -596,6 +596,21 @@ export type Database = {
         }
       }
       refresh_price_estimates: { Args: never; Returns: undefined }
+      retailer_prices: {
+        Args: {
+          p_channel: Database["public"]["Enums"]["channel"]
+          p_country: string
+          p_variant_id: string
+        }
+        Returns: {
+          amount_minor: number
+          currency: string
+          freshest_observed_on: string
+          observation_count: number
+          retailer_id: string
+          retailer_name: string
+        }[]
+      }
       search_catalogue: {
         Args: { p_category?: string; p_country?: string; p_query: string }
         Returns: {

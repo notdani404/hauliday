@@ -21,7 +21,7 @@ import { theme } from '../lib/theme';
 
 export default function Submit() {
   const { session, clear } = useCapture();
-  const { dest } = useTrip();
+  const { shopping: dest } = useTrip(); // the market you're shopping in (home or abroad)
   const [retailers, setRetailers] = useState<RetailerOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [retailerId, setRetailerId] = useState<string | null>(null);

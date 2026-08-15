@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useCapture } from '../lib/capture';
-import type { Estimate } from '../lib/catalog';
+import { useTrip } from '../lib/trip';
+import { getRetailerPrices, type Estimate, type RetailerPrice } from '../lib/catalog';
 import { useWatch } from '../lib/useWatch';
 import { Button, Card, WatchHeart, confidenceLabel, moneyText } from '../lib/ui';
 import { theme } from '../lib/theme';
@@ -46,6 +47,15 @@ function EstimateCard({ label, est }: { label: string; est: Estimate | null }) {
 export default function Product() {
   const { session } = useCapture();
   const { ids, toggle } = useWatch();
+  const { mode, home } = useTrip();
+  const [retailerPrices, setRetailerPrices] = useState<RetailerPrice[] | null>(null);
+
+  const variantId = session?.variant?.variantId;
+  useEffect(() => {
+    if (mode === 'home' && variantId) {
+      void getRetailerPrices(variantId, home.code, 'in_store').then(setRetailerPrices);
+    }
+  }, [mode, variantId, home.code]);
 
   // Guard: no active scan -> back to main.
   useEffect(() => {
@@ -90,7 +100,33 @@ export default function Product() {
           <WatchHeart active={ids.has(v.variantId)} onPress={() => void toggle(v.variantId)} />
         </View>
 
-        {!soldAtHome ? (
+        {mode === 'home' ? (
+          <>
+            <Text style={styles.sectionTitle}>In-store prices in {home.name}</Text>
+            {retailerPrices === null ? (
+              <Text style={styles.loading}>Loading prices…</Text>
+            ) : retailerPrices.length === 0 ? (
+              <Card>
+                <Text style={styles.estEmpty}>No in-store prices logged here yet — be the first.</Text>
+              </Card>
+            ) : (
+              retailerPrices.map((rp, i) => (
+                <Card key={rp.retailerId} style={styles.retailerCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.estLabel}>{rp.retailerName}</Text>
+                    <Text style={styles.estMeta}>
+                      {rp.observationCount} shopper{rp.observationCount === 1 ? '' : 's'} · {daysAgo(rp.freshestObservedOn)}
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.estPrice}>{moneyText(rp.price)}</Text>
+                    {i === 0 && retailerPrices.length > 1 && <Text style={styles.cheapest}>Cheapest</Text>}
+                  </View>
+                </Card>
+              ))
+            )}
+          </>
+        ) : !soldAtHome ? (
           <Card style={styles.onlyHere}>
             <Text style={styles.onlyHereTitle}>🎁 Not sold at home</Text>
             <Text style={styles.onlyHereSub}>
@@ -107,7 +143,7 @@ export default function Product() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Enter the price you see" onPress={() => router.push('/price')} />
+        <Button title="Log the price you see" onPress={() => router.push('/price')} />
       </View>
     </SafeAreaView>
   );
@@ -121,6 +157,9 @@ const styles = StyleSheet.create({
   size: { fontSize: 13, color: theme.slate, marginTop: 4 },
   sectionTitle: { fontSize: 13, fontWeight: '700', color: theme.slate, textTransform: 'uppercase', letterSpacing: 0.5 },
   estCard: { gap: 4 },
+  retailerCard: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cheapest: { fontSize: 10, fontWeight: '800', color: theme.green, marginTop: 2 },
+  loading: { fontSize: 14, color: theme.slate },
   estLabel: { fontSize: 12, color: theme.slate, fontWeight: '600' },
   estPrice: { fontSize: 22, fontWeight: '800', color: theme.ink },
   estMeta: { fontSize: 12, color: theme.slate },
