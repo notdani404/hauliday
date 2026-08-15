@@ -5,7 +5,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { fromDecimal, format, type Money } from '@hauliday/money';
 import { suggestedShelfTargets } from '@hauliday/verdict';
 import { useTrip } from '../../lib/trip';
-import { taxFreeRate, marketByCode, DESTINATIONS } from '../../lib/markets';
+import { taxFreeRate, marketByCode, DESTINATION_COUNTRIES } from '../../lib/markets';
 import { FX_SNAPSHOT } from '../../lib/fxSnapshot';
 import {
   getWatchlist,
@@ -115,7 +115,7 @@ export default function WatchDetail() {
 
           <Text style={styles.section}>For which trip?</Text>
           <View style={styles.chips}>
-            {DESTINATIONS.map((m) => (
+            {DESTINATION_COUNTRIES.map((m) => (
               <Pressable
                 key={m.code}
                 style={[styles.chip, itemDest === m.code && styles.chipSel]}

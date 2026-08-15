@@ -14,6 +14,7 @@ export interface PendingObservation {
   amountMinor: number;
   currency: string;
   taxInclusive: boolean;
+  locality?: string; // city slug where seen (D-036), e.g. 'bangkok'
   observedOn: string; // YYYY-MM-DD, local shelf date
   createdAt: string; // ISO
   storeName?: string; // in-store: specific branch, resolved to a store at sync time
@@ -123,6 +124,7 @@ export async function flush(): Promise<{ synced: number; remaining: number }> {
       amount_minor: it.amountMinor,
       currency: it.currency,
       tax_inclusive: it.taxInclusive,
+      locality: it.locality ?? null,
       source: 'human',
       observed_on: it.observedOn,
     });

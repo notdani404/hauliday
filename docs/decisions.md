@@ -349,3 +349,17 @@ reference with its channel + shopper count + age + confidence (no bare number, #
 Abroad/Home toggle is relabelled "I'm travelling / I'm home" with a one-line hint so the verdict
 never silently disappears; product's CTA routes to the destination picker instead of bouncing.
 2026-08
+
+**D-036 · Destinations are cities in country clusters, not countries (M18)**
+Countries are too coarse — a Bangkok price isn't a Chiang Mai price. A **country cluster** holds
+what's national (currency, tax-free/VAT via taxFreeRate, FX); **cities** are the price locality.
+`markets.ts`: `DESTINATION_COUNTRIES` (clusters) + `DESTINATION_CITIES` (Bangkok/Chiang Mai/Phuket,
+Tokyo/Osaka, Seoul, Taipei), each city inheriting its cluster's currency/code/flag flat so screens
+that read `dest.currency`/`dest.code` are unchanged; `dest.name` renders the city. Trip `dest` is a
+`DestinationCity` persisted by `cityId` (storage bumped v1→v2). Picker groups cities under country
+headers. **Scope: model cities now, aggregate later** — observations gain a nullable `locality`
+column (city slug), stamped at capture from the shopping market's `cityId`; existing rows stay null
+(SG home = 'singapore'). `price_estimate`/`retailer_prices` still aggregate nationally until
+destination crowd volume justifies per-city — no read-path change yet. Watchlist "which trip?" stays
+country-level (D-029 groups by country). First live corridor: SG→Bangkok.
+2026-08

@@ -119,6 +119,7 @@ export type Database = {
           currency: string
           evidence_verified: boolean
           id: string
+          locality: string | null
           observed_on: string
           observer_id: string | null
           photo_id: string | null
@@ -138,6 +139,7 @@ export type Database = {
           currency: string
           evidence_verified?: boolean
           id?: string
+          locality?: string | null
           observed_on: string
           observer_id?: string | null
           photo_id?: string | null
@@ -157,6 +159,7 @@ export type Database = {
           currency?: string
           evidence_verified?: boolean
           id?: string
+          locality?: string | null
           observed_on?: string
           observer_id?: string | null
           photo_id?: string | null

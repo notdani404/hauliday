@@ -15,6 +15,7 @@ export interface ObservationInput {
   amountMinor: number;
   currency: string;
   taxInclusive: boolean;
+  locality?: string; // city slug where the price was seen (D-036)
   storeName?: string;
   storeArea?: string;
   placeId?: string;

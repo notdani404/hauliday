@@ -92,6 +92,7 @@ export default function Submit() {
         amountMinor: Number(session.destShelfMinor),
         currency: dest.currency,
         taxInclusive: true,
+        locality: dest.cityId || undefined, // the city this price was seen in (D-036)
         ...(inStore && place
           ? {
               placeId: place.placeId,

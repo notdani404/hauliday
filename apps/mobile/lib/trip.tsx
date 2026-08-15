@@ -1,21 +1,29 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { HOME_MARKETS, DESTINATIONS, marketByCode, type Market } from './markets';
+import {
+  HOME_MARKETS,
+  DESTINATION_CITIES,
+  cityById,
+  marketByCode,
+  type Market,
+  type DestinationCity,
+} from './markets';
 
-const STORAGE_KEY = 'hauliday.trip.v1';
+// v2: dest is now a city, not a country (D-036). Old v1 country-shaped dest is dropped.
+const STORAGE_KEY = 'hauliday.trip.v2';
 
 export type TripMode = 'abroad' | 'home';
 
 interface TripState {
   home: Market;
-  dest: Market | null;
+  dest: DestinationCity | null;
   /** 'abroad' = haul comparison vs home; 'home' = local price check between stores. */
   mode: TripMode;
   /** Where you're shopping right now: dest when abroad, home when home. */
   shopping: Market | null;
   hydrated: boolean;
   setHome: (m: Market) => void;
-  setDest: (m: Market) => void;
+  setDest: (c: DestinationCity) => void;
   setMode: (m: TripMode) => void;
 }
 
@@ -25,7 +33,7 @@ const TripContext = createContext<TripState | null>(null);
 
 export function TripProvider({ children }: { children: ReactNode }) {
   const [home, setHomeState] = useState<Market>(defaultHome);
-  const [dest, setDestState] = useState<Market | null>(null);
+  const [dest, setDestState] = useState<DestinationCity | null>(null);
   const [mode, setModeState] = useState<TripMode>('abroad');
   const [hydrated, setHydrated] = useState(false);
 
@@ -34,9 +42,9 @@ export function TripProvider({ children }: { children: ReactNode }) {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (raw) {
-          const saved = JSON.parse(raw) as { home?: string; dest?: string; mode?: TripMode };
+          const saved = JSON.parse(raw) as { home?: string; destCity?: string; mode?: TripMode };
           if (saved.home) setHomeState(marketByCode(saved.home) ?? defaultHome);
-          if (saved.dest) setDestState(marketByCode(saved.dest) ?? null);
+          if (saved.destCity) setDestState(cityById(saved.destCity) ?? null);
           if (saved.mode === 'home' || saved.mode === 'abroad') setModeState(saved.mode);
         }
       })
@@ -49,7 +57,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
     if (!hydrated) return;
     void AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ home: home.code, dest: dest?.code ?? null, mode }),
+      JSON.stringify({ home: home.code, destCity: dest?.cityId ?? null, mode }),
     );
   }, [home, dest, mode, hydrated]);
 
@@ -76,4 +84,4 @@ export function useTrip(): TripState {
   return ctx;
 }
 
-export { HOME_MARKETS, DESTINATIONS };
+export { HOME_MARKETS, DESTINATION_CITIES, destinationsByCountry } from './markets';
