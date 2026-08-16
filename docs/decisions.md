@@ -395,3 +395,16 @@ exhausted → 0 found), so **all 284 are estimates tagged source='seed'** — cl
 breakdowns resolve (e.g. Cetaphil 54.90 MYR, Anessa 99.90 MYR), SG estimates byte-unchanged. The MY-home
 verdict now works end-to-end. Loader in scratchpad, one-off DB op not in repo.
 2026-08
+
+**D-039 · Thai-market catalogue for the SG/MY→Bangkok corridor**
+Thailand is a *destination*, not a home market, so "meaningful shopping in Thailand" = making a Bangkok
+scan/search hit our catalogue. Loaded 53 Thai-market products (market TH; catalogue now 141 variants) —
+Thai local beauty brands (Snail White, Mistine, Cathy Doll, Beauty Buffet, Srichand…) + a few snacks/OTC.
+Home resolution is data-driven via `soldAtHome` (true iff a home observation exists): 42 dual-market items
+got SG (SGD) + MY (MYR) home prices → real verdicts; 11 Thai-only items (Ele, Ver.88, Sistar, Cute Press,
+Poy-Sian, Yanhee…) got none → the "🎁 not sold at home / buy-it-here" state. All 165 home-price rows are
+estimates tagged source='seed' (research web budget exhausted → 0 grounded). **Known gap: BARCODE-LESS.**
+The research wouldn't fabricate 885 codes, so these Thai products are browsable + searchable but NOT yet
+scannable — a grounded barcode-fill pass is the follow-up (needs fresh web-search budget). Verified: Snail
+White → SG 29.90 / MY 69.90 seed verdicts; Ele → not-sold-at-home. Loader in scratchpad, one-off DB op.
+2026-08
