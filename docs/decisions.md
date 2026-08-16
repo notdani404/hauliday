@@ -381,3 +381,17 @@ has a real choice. **SGD conversions are byte-identical to before** (SG verdicts
 change (`profile.country` already generic; Money already registers MYR). Phase B = seed MY home-price
 data before the MY verdict is actually useful; anon home-switching deferred to then.
 2026-08
+
+**D-038 · Malaysia home-price data seeded; a 'seed' observation source (M19)**
+Multi-home Phase B for Malaysia. Added a `seed` value to the `obs_source` enum (its own migration —
+a new enum value can't be used in the same txn that adds it) and taught `price_estimate` to weight it
+LOW (0.3 in the weighted median, 0.4 in the confidence source term) so real observations dominate the
+moment they arrive and a seed-only market reads as low/medium confidence. Without the ELSE branch a
+seed row produced a NULL weight → broken confidence for seed-only markets, so both source CASEs now
+list 'seed'. Loaded 284 MYR price rows across MY retailers (Watsons/Guardian/Caring/AEON/Shopee/Lazada
+MY) for all 88 catalogue variants, locality 'kuala-lumpur'. Grounding failed (research web-budget
+exhausted → 0 found), so **all 284 are estimates tagged source='seed'** — clearly demo data, purgeable
+(`delete from observation where source='seed'`) before launch. Verified: MY in_store estimates + per-store
+breakdowns resolve (e.g. Cetaphil 54.90 MYR, Anessa 99.90 MYR), SG estimates byte-unchanged. The MY-home
+verdict now works end-to-end. Loader in scratchpad, one-off DB op not in repo.
+2026-08

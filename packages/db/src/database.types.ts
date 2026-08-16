@@ -694,7 +694,7 @@ export type Database = {
       determined_by: "human" | "llm" | "gtin"
       equivalence_relation: "identical" | "equivalent" | "similar" | "different"
       identifier_type: "gtin" | "jan" | "ean" | "upc" | "asin" | "sku"
-      obs_source: "human" | "feed" | "scrape" | "llm_grounded"
+      obs_source: "human" | "feed" | "scrape" | "llm_grounded" | "seed"
       trust_tier: "new" | "trusted" | "verified" | "flagged"
     }
     CompositeTypes: {
@@ -837,7 +837,7 @@ export const Constants = {
       determined_by: ["human", "llm", "gtin"],
       equivalence_relation: ["identical", "equivalent", "similar", "different"],
       identifier_type: ["gtin", "jan", "ean", "upc", "asin", "sku"],
-      obs_source: ["human", "feed", "scrape", "llm_grounded"],
+      obs_source: ["human", "feed", "scrape", "llm_grounded", "seed"],
       trust_tier: ["new", "trusted", "verified", "flagged"],
     },
   },
