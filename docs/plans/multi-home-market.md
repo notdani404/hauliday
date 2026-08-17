@@ -1,7 +1,8 @@
 # Plan · Multi–home-market support
 
-**Status:** proposed, awaiting sign-off. Touches pricing logic (verdict FX) → plan-first per
-the working agreement.
+**Status:** Phase A ✅ shipped (D-037). Malaysia Phase B ✅ seeded (D-038). Remaining: anon home
+picker, grounded MY prices (currently seed-tagged estimates), further markets. Touches pricing
+logic (verdict FX) → this was plan-first per the working agreement.
 
 **Goal:** let a user pick a home market other than Singapore; the verdict, home-price estimates,
 and savings all compute in *their* home currency — not a hardcoded SGD.

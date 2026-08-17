@@ -36,11 +36,23 @@ observation       THE LEDGER. Append-only.
                   channel (online | in_store),
                   amount_minor (bigint), currency (char(3)),
                   tax_inclusive (bool), tax_rate_applied,
-                  source (human | feed | llm_grounded | scrape),
+                  source (human | feed | scrape | llm_grounded | seed),
+                  locality (nullable, city slug where seen — D-036),
                   observer_id (nullable), photo_id (nullable),
                   source_url (nullable), evidence_verified (bool),
                   observed_on (date, local), created_at (timestamptz),
                   superseded_by (nullable), flagged_count
+
+                  `locality` (D-036): countries are too coarse (a Bangkok price
+                  isn't a Chiang Mai price), so each observation is stamped with the
+                  city it was seen in. Nullable on pre-M18 rows. Not aggregated on
+                  the read path yet — price_estimate still groups by country until
+                  destination crowd volume justifies per-city.
+
+                  `seed` (D-038): demo/estimate prices loaded to make a new market
+                  usable BEFORE real crowd data exists. NOT a real observation —
+                  weighted low and trivially purgeable (`delete … where source =
+                  'seed'`) before launch. Used for the seeded SG/MY/TH corridor data.
 
 fx_rate           base, quote, rate, as_of, source. Daily close.
                   Also store a card_realistic rate (interbank + spread).
@@ -65,7 +77,10 @@ pointing backwards. The ledger is the audit trail and the training set.
 JPY and KRW have zero decimals; getting this wrong produces 100× errors that look
 plausible in a comparison view.
 
-**Source precedence:** `human > feed > scrape > llm_grounded`.
+**Source precedence:** `human > feed > scrape > seed > llm_grounded`.
+(Weights in `price_estimate`: human 1.0 · feed 0.7 · scrape 0.5 · seed 0.3 ·
+llm_grounded 0.25.) `seed` sits low on purpose — the instant a real observation
+lands, it dominates the seeded estimate.
 
 An `llm_grounded` observation is provisional. It is displaced the moment any higher
 source reports on the same variant, and it must never outrank a human observation.

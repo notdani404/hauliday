@@ -20,3 +20,21 @@ shelf price to get a verdict. Full candidate set (incl. unverified) is in
 
 Example JP shelf prices to try (¥): Anessa ~2530, Bioré ~968, Melano CC ~1188,
 Senka ~430, DHC ~770, Merries ~1180.
+
+## Catalogue expansion (2026-08, D-034/D-037/D-038/D-039)
+
+The catalogue is now **141 variants**, not just these 10. Beyond the 10 hand-verified SKUs:
+
+- **Broad SG set** (D-037): 78 products, 32 scannable via checksum-validated EANs (mostly
+  shared/international GTINs). Only 16 grounded SG prices loaded; the rest show "no price yet."
+- **Malaysia home prices** (D-038): 284 MYR rows across MY retailers for all 88 SG-era variants,
+  so the MY-home verdict works. **All estimates**, `source='seed'`.
+- **Thai-market catalogue** (D-039): 53 Thai products (Snail White, Mistine, Cathy Doll…),
+  **barcode-less** (browsable/searchable, not scannable). 42 dual-market get SG+MY seed home
+  prices → verdicts; 11 Thai-only → "not sold at home".
+
+**Caveat:** almost all of the added prices are seed-tagged **estimates**, and the Thai items have
+**no barcodes** — grounding was blocked by the research web-search budget. Purge seed data with
+`delete from observation where source = 'seed';`. Grounded barcode/price fill is the follow-up.
+The one-off loader scripts + candidate JSONs live in the session scratchpad (ephemeral) — the
+loaded data itself is durable in Supabase.
